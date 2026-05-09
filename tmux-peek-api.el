@@ -79,6 +79,22 @@ When MAPPER is non-nil, use it to build `:value' from stdout."
      callback opts
      (lambda (stdout) (tmux-peek--parse-list-panes stdout fields)))))
 
+(defun tmux-peek-list-clients-async (callback &optional opts)
+  "Asynchronously list tmux clients."
+  (let ((fields (or (plist-get opts :fields) tmux-peek-default-client-fields)))
+    (tmux-peek--run-tmux-async
+     (tmux-peek--list-args "list-clients" fields opts)
+     callback opts
+     (lambda (stdout) (tmux-peek--parse-list-clients stdout fields)))))
+
+(defun tmux-peek-list-buffers-async (callback &optional opts)
+  "Asynchronously list tmux paste buffers."
+  (let ((fields (or (plist-get opts :fields) tmux-peek-default-buffer-fields)))
+    (tmux-peek--run-tmux-async
+     (tmux-peek--list-args "list-buffers" fields opts)
+     callback opts
+     (lambda (stdout) (tmux-peek--parse-list-buffers stdout fields)))))
+
 (defun tmux-peek-display-message-async (format callback &optional opts)
   "Asynchronously expand tmux FORMAT using display-message."
   (tmux-peek--run-tmux-async

@@ -33,6 +33,30 @@
                       :width 120
                       :height 40))))))
 
+(ert-deftest tmux-peek-parse-list-clients-converts-types ()
+  (let* ((sep tmux-peek--field-separator)
+         (stdout (concat "/dev/ttys001" sep "/dev/ttys001" sep "main" sep
+                         "23456" sep "100" sep "30" sep "1715240010\n"))
+         (clients (tmux-peek--parse-list-clients stdout)))
+    (should (equal clients
+                   '((:name "/dev/ttys001"
+                      :tty "/dev/ttys001"
+                      :session "main"
+                      :pid 23456
+                      :width 100
+                      :height 30
+                      :created 1715240010))))))
+
+(ert-deftest tmux-peek-parse-list-buffers-converts-types ()
+  (let* ((sep tmux-peek--field-separator)
+         (stdout (concat "buffer0" sep "5" sep "1715240020" sep "hello\n"))
+         (buffers (tmux-peek--parse-list-buffers stdout)))
+    (should (equal buffers
+                   '((:name "buffer0"
+                      :size 5
+                      :created 1715240020
+                      :sample "hello"))))))
+
 (ert-deftest tmux-peek-parse-list-signals-on-wrong-field-count ()
   (should-error
    (tmux-peek--parse-list-sessions "main\x1f$0\n")

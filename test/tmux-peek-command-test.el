@@ -3,6 +3,7 @@
 ;;; Code:
 
 (require 'ert)
+(require 'seq)
 (require 'tmux-peek-command)
 (require 'tmux-peek-api)
 
@@ -20,6 +21,20 @@
 
 (ert-deftest tmux-peek-kill-pane-requires-target ()
   (should-error (tmux-peek--kill-pane-args nil)))
+
+(ert-deftest tmux-peek-list-clients-builds-format-args ()
+  (let ((args (tmux-peek--list-args
+               "list-clients" tmux-peek-default-client-fields
+               '(:socket-name "peek"))))
+    (should (equal (seq-take args 3) '("-L" "peek" "list-clients")))
+    (should (member "-F" args))))
+
+(ert-deftest tmux-peek-list-buffers-builds-format-args ()
+  (let ((args (tmux-peek--list-args
+               "list-buffers" tmux-peek-default-buffer-fields
+               '(:socket-name "peek"))))
+    (should (equal (seq-take args 3) '("-L" "peek" "list-buffers")))
+    (should (member "-F" args))))
 
 (ert-deftest tmux-peek-show-options-builds-scope-args ()
   (should (equal (tmux-peek--show-options-args

@@ -66,6 +66,21 @@
     (:key :width :format "pane_width" :type integer)
     (:key :height :format "pane_height" :type integer)))
 
+(defconst tmux-peek-default-client-fields
+  '((:key :name :format "client_name" :type string)
+    (:key :tty :format "client_tty" :type string)
+    (:key :session :format "client_session" :type string)
+    (:key :pid :format "client_pid" :type integer)
+    (:key :width :format "client_width" :type integer)
+    (:key :height :format "client_height" :type integer)
+    (:key :created :format "client_created" :type integer)))
+
+(defconst tmux-peek-default-buffer-fields
+  '((:key :name :format "buffer_name" :type string)
+    (:key :size :format "buffer_size" :type integer)
+    (:key :created :format "buffer_created" :type integer)
+    (:key :sample :format "buffer_sample" :type string)))
+
 (defun tmux-peek--tmux-executable (&optional opts)
   "Return tmux executable from OPTS or customization."
   (or (plist-get opts :tmux-executable)

@@ -78,6 +78,14 @@
   "Parse list-panes STDOUT."
   (tmux-peek--parse-list stdout (or fields tmux-peek-default-pane-fields)))
 
+(defun tmux-peek--parse-list-clients (stdout &optional fields)
+  "Parse list-clients STDOUT."
+  (tmux-peek--parse-list stdout (or fields tmux-peek-default-client-fields)))
+
+(defun tmux-peek--parse-list-buffers (stdout &optional fields)
+  "Parse list-buffers STDOUT."
+  (tmux-peek--parse-list stdout (or fields tmux-peek-default-buffer-fields)))
+
 (defun tmux-peek--parse-show-options (stdout)
   "Parse show-options STDOUT into an alist."
   (mapcar

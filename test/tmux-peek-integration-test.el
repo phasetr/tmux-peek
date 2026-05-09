@@ -3,6 +3,7 @@
 ;;; Code:
 
 (require 'ert)
+(require 'seq)
 (require 'tmux-peek)
 
 (defconst tmux-peek-test--socket "tmux-peek-test")
@@ -39,6 +40,8 @@
   (tmux-peek-test--tmux-ok
    "set-environment" "-t" tmux-peek-test--session
    "TMUX_PEEK_TEST_ENV" "ok")
+  (tmux-peek-test--tmux-ok
+   "set-buffer" "-b" "tmux-peek-test-buffer" "buffer-text")
   (tmux-peek-test--tmux-ok
    "split-window" "-d" "-t" (concat tmux-peek-test--session ":" tmux-peek-test--window)
    "printf second; while true; do sleep 1; done"))
@@ -147,6 +150,21 @@
       (should (equal (cdr (assoc "TMUX_PEEK_TEST_ENV"
                                  (plist-get environment :value)))
                      "ok")))))
+
+(ert-deftest tmux-peek-integration-list-buffers ()
+  (tmux-peek-test--with-session
+    (let ((buffers
+           (tmux-peek-test--wait
+            (lambda (callback)
+              (tmux-peek-list-buffers-async
+               callback
+               (list :socket-name tmux-peek-test--socket))))))
+      (should (plist-get buffers :ok))
+      (should (seq-some
+               (lambda (buffer)
+                 (and (equal (plist-get buffer :name) "tmux-peek-test-buffer")
+                      (equal (plist-get buffer :sample) "buffer-text")))
+               (plist-get buffers :value))))))
 
 (provide 'tmux-peek-integration-test)
 ;;; tmux-peek-integration-test.el ends here

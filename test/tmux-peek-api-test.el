@@ -34,6 +34,50 @@
                         :width 120
                         :height 40)))))))
 
+(ert-deftest tmux-peek-api-list-clients-maps-value ()
+  (let* ((sep tmux-peek--field-separator)
+         (stdout (concat "/dev/ttys001" sep "/dev/ttys001" sep "main" sep
+                         "23456" sep "100" sep "30" sep "1715240010\n"))
+         captured-args
+         captured-result)
+    (cl-letf (((symbol-function 'tmux-peek--exec-async)
+               (lambda (_executable args callback &optional _opts)
+                 (setq captured-args args)
+                 (funcall callback
+                          (list :ok t :stdout stdout :stderr "" :exit-code 0))
+                 :handle)))
+      (tmux-peek-list-clients-async
+       (lambda (result) (setq captured-result result)))
+      (should (member "list-clients" captured-args))
+      (should (equal (plist-get captured-result :value)
+                     '((:name "/dev/ttys001"
+                        :tty "/dev/ttys001"
+                        :session "main"
+                        :pid 23456
+                        :width 100
+                        :height 30
+                        :created 1715240010)))))))
+
+(ert-deftest tmux-peek-api-list-buffers-maps-value ()
+  (let* ((sep tmux-peek--field-separator)
+         (stdout (concat "buffer0" sep "5" sep "1715240020" sep "hello\n"))
+         captured-args
+         captured-result)
+    (cl-letf (((symbol-function 'tmux-peek--exec-async)
+               (lambda (_executable args callback &optional _opts)
+                 (setq captured-args args)
+                 (funcall callback
+                          (list :ok t :stdout stdout :stderr "" :exit-code 0))
+                 :handle)))
+      (tmux-peek-list-buffers-async
+       (lambda (result) (setq captured-result result)))
+      (should (member "list-buffers" captured-args))
+      (should (equal (plist-get captured-result :value)
+                     '((:name "buffer0"
+                        :size 5
+                        :created 1715240020
+                        :sample "hello")))))))
+
 (ert-deftest tmux-peek-api-kill-pane-builds-only-kill-pane ()
   (let (captured-args captured-result)
     (cl-letf (((symbol-function 'tmux-peek--exec-async)

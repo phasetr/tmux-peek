@@ -9,6 +9,7 @@ around the needs of [[https://github.com/phasetr/enkan-repl][enkan-repl]], but r
 ** Scope
 
 - Query tmux sessions, windows, and panes.
+- Query tmux clients, paste buffers, options, and environment.
 - Capture pane text, including one-shot tail-like capture.
 - Provide async process helpers.
 - Provide only =kill-pane= for explicitly selected pane cleanup.
