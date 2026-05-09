@@ -50,6 +50,21 @@
     (should-not (plist-get result :ok))
     (should (eq (plist-get result :error) 'tmux-peek-error-timeout))))
 
+(ert-deftest tmux-peek-exec-async-not-found-returns-handle ()
+  (let (handle
+        result)
+    (setq result
+          (tmux-peek-test--wait
+           (lambda (callback)
+             (setq handle
+                   (tmux-peek--exec-async
+                    "tmux-peek-definitely-missing-executable"
+                    nil callback '(:timeout 1.0))))))
+    (should (tmux-peek-handle-p handle))
+    (should (tmux-peek-handle-done handle))
+    (should-not (plist-get result :ok))
+    (should (eq (plist-get result :error) 'tmux-peek-error-not-found))))
+
 (ert-deftest tmux-peek-parallel-async-preserves-order ()
   (let ((result
          (tmux-peek-test--wait

@@ -153,15 +153,19 @@ OPTS may contain `:timeout'.  Return a `tmux-peek-handle'."
             (setf (tmux-peek-handle-timer handle)
                   (run-at-time timeout nil #'tmux-peek--timeout-handle handle))))
         handle)
-    (run-at-time
-     0 nil callback
-     (list :ok nil
-           :error 'tmux-peek-error-not-found
-           :stdout ""
-           :stderr (format "Executable not found: %s" executable)
-           :exit-code nil
-           :command (cons executable args)))
-    nil))
+    (let ((handle (tmux-peek--make-handle
+                   :callback callback
+                   :command (cons executable args)
+                   :done t)))
+      (run-at-time
+       0 nil callback
+       (list :ok nil
+             :error 'tmux-peek-error-not-found
+             :stdout ""
+             :stderr (format "Executable not found: %s" executable)
+             :exit-code nil
+             :command (cons executable args)))
+      handle)))
 
 (defun tmux-peek-parallel-async (thunks callback)
   "Run async THUNKS and call CALLBACK when all are complete.
