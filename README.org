@@ -22,6 +22,7 @@ With leaf and straight.el:
 
 - [[file:docs/commands.org][Command reference]]
 - [[file:docs/usage.org][Usage]]
+- [[file:docs/development.org][Development notes]]
 
 ** Current Scope
 

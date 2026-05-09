@@ -1,0 +1,116 @@
+* tmux-peek Development Notes
+
+This document is for developing tmux-peek itself from a running Emacs session.
+
+** Load the Working Tree
+
+Add the repository root to =load-path= before requiring tmux-peek:
+
+#+begin_src elisp
+(add-to-list 'load-path "/path/to/tmux-peek")
+(require 'tmux-peek)
+#+end_src
+
+When using leaf for local development, point straight.el at the local
+repository:
+
+#+begin_src elisp
+(leaf tmux-peek
+  :straight (:type git :local-repo "/path/to/tmux-peek")
+  :require t)
+#+end_src
+
+** Reload After Editing
+
+For small edits, evaluate the changed defun with =C-M-x= or evaluate the
+buffer with =M-x eval-buffer=.
+
+When module dependencies changed, reload the files in dependency order:
+
+#+begin_src elisp
+(load "/path/to/tmux-peek/tmux-peek-error.el" nil 'nomessage)
+(load "/path/to/tmux-peek/tmux-peek-async.el" nil 'nomessage)
+(load "/path/to/tmux-peek/tmux-peek-command.el" nil 'nomessage)
+(load "/path/to/tmux-peek/tmux-peek-parse.el" nil 'nomessage)
+(load "/path/to/tmux-peek/tmux-peek-api.el" nil 'nomessage)
+(load "/path/to/tmux-peek/tmux-peek.el" nil 'nomessage)
+#+end_src
+
+If behavior still looks stale, start a fresh Emacs.  Async process sentinels
+and old callback closures can keep old definitions alive until their process
+finishes.
+
+** Avoid Stale Byte-compiled Files
+
+During interactive development, prefer loading source files.  If byte-compiled
+files exist, remove them before reloading:
+
+#+begin_src sh
+make clean
+#+end_src
+
+=make check= will byte-compile again as part of verification.
+
+** Run Focused Checks from Emacs
+
+Load a test file and run ERT interactively:
+
+#+begin_src elisp
+(add-to-list 'load-path "/path/to/tmux-peek")
+(load "/path/to/tmux-peek/test/tmux-peek-api-test.el")
+(ert "tmux-peek-api")
+#+end_src
+
+For tmux-backed behavior, prefer the Make target because it sets up a dedicated
+test socket:
+
+#+begin_src sh
+make test-integration
+#+end_src
+
+** Manual Async Probe
+
+A minimal callback probe:
+
+#+begin_src elisp
+(tmux-peek-list-sessions-async
+ (lambda (result)
+   (message "tmux-peek result: %S" result)))
+#+end_src
+
+For a non-default tmux socket:
+
+#+begin_src elisp
+(tmux-peek-list-panes-async
+ (lambda (result)
+   (message "tmux-peek panes: %S" result))
+ '(:socket-name "tmux-peek-test"))
+#+end_src
+
+** Cleanup While Developing
+
+tmux-peek itself exposes only session-level cleanup:
+
+#+begin_src elisp
+(tmux-peek-kill-session-async
+ "tmux-peek-test-session"
+ (lambda (result)
+   (message "kill-session: %S" result))
+ '(:socket-name "tmux-peek-test"))
+#+end_src
+
+Do not add temporary wrappers for =kill-pane=, =kill-window=, or
+=kill-server= while debugging.  Use direct shell tmux commands for one-off
+manual cleanup outside the library API when needed.
+
+** Final Verification Before Commit
+
+Run both:
+
+#+begin_src sh
+make check
+make test-integration
+#+end_src
+
+=make check= covers byte compilation, checkdoc, and unit tests.  The
+integration target verifies real tmux behavior on a dedicated socket.
