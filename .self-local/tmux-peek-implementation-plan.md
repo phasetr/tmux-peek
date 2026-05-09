@@ -94,14 +94,11 @@
 
 ## 4. Parser とエラー分類
 
-優先 parser:
+実装済み parser:
 
 - `list-sessions`
 - `list-windows`
 - `list-panes`
-
-後回し parser:
-
 - `list-clients`
 - `list-buffers`
 - `show-options`
@@ -131,7 +128,7 @@
 
 ## 5. Public API
 
-優先実装:
+実装済み:
 
 - `tmux-peek-list-sessions-async`
 - `tmux-peek-list-windows-async`
@@ -141,14 +138,14 @@
 - `tmux-peek-target-exists-p-async`
 - `tmux-peek-server-running-p-async`
 - `tmux-peek-kill-pane-async`
+- `tmux-peek-list-clients-async`
+- `tmux-peek-list-buffers-async`
+- `tmux-peek-show-buffer-async`
+- `tmux-peek-show-options-async`
+- `tmux-peek-show-environment-async`
 
-後回し候補:
+現段階では作らない:
 
-- `tmux-peek-list-clients-async`: 実装済み
-- `tmux-peek-list-buffers-async`: 実装済み
-- `tmux-peek-show-buffer-async`: 実装済み
-- `tmux-peek-show-options-async`: 実装済み
-- `tmux-peek-show-environment-async`: 実装済み
 - 同期補助版: 現段階では作らない. callback を受けられない呼び出し元が明確になった場合だけ検討する
 
 方針:
@@ -222,7 +219,7 @@ README に書くこと:
 - `kill-session`, `kill-window`, `kill-server` は作らない
 - 同期補助版は現段階では未実装であり, 必要な理由は callback を受けられない呼び出し元との互換性に限る
 
-最後にやること:
+実施済みの整理:
 
 - 全体を徹底的にリファクタリングする
 - 不要な wrapper を削る
