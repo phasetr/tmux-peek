@@ -65,6 +65,56 @@
       (should (plist-get captured-result :ok))
       (should-not (plist-get captured-result :value)))))
 
+(ert-deftest tmux-peek-api-target-exists-preserves-non-target-errors ()
+  (let (captured-result)
+    (cl-letf (((symbol-function 'tmux-peek--exec-async)
+               (lambda (_executable _args callback &optional _opts)
+                 (funcall callback
+                          (list :ok nil
+                                :error 'tmux-peek-error-not-found
+                                :stdout ""
+                                :stderr "missing"
+                                :exit-code nil))
+                 :handle)))
+      (tmux-peek-target-exists-p-async
+       "%missing" (lambda (result) (setq captured-result result)))
+      (should-not (plist-get captured-result :ok))
+      (should (eq (plist-get captured-result :error)
+                  'tmux-peek-error-not-found)))))
+
+(ert-deftest tmux-peek-api-server-running-no-server-is-false ()
+  (let (captured-result)
+    (cl-letf (((symbol-function 'tmux-peek--exec-async)
+               (lambda (_executable _args callback &optional _opts)
+                 (funcall callback
+                          (list :ok nil
+                                :error 'tmux-peek-error-no-server
+                                :stdout ""
+                                :stderr "no server running"
+                                :exit-code 1))
+                 :handle)))
+      (tmux-peek-server-running-p-async
+       (lambda (result) (setq captured-result result)))
+      (should (plist-get captured-result :ok))
+      (should-not (plist-get captured-result :value)))))
+
+(ert-deftest tmux-peek-api-server-running-preserves-not-found ()
+  (let (captured-result)
+    (cl-letf (((symbol-function 'tmux-peek--exec-async)
+               (lambda (_executable _args callback &optional _opts)
+                 (funcall callback
+                          (list :ok nil
+                                :error 'tmux-peek-error-not-found
+                                :stdout ""
+                                :stderr "missing"
+                                :exit-code nil))
+                 :handle)))
+      (tmux-peek-server-running-p-async
+       (lambda (result) (setq captured-result result)))
+      (should-not (plist-get captured-result :ok))
+      (should (eq (plist-get captured-result :error)
+                  'tmux-peek-error-not-found)))))
+
 (ert-deftest tmux-peek-api-parse-error-returns-clean-failure ()
   (let (captured-result)
     (cl-letf (((symbol-function 'tmux-peek--exec-async)

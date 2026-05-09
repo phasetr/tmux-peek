@@ -107,10 +107,12 @@ OPTS may include `:target' and `:tail-lines'."
    (lambda (result)
      (if (plist-get result :ok)
          (funcall callback (list :ok t :value t :source result))
-       (funcall callback
-                (list :ok t
-                      :value nil
-                      :source result))))
+       (if (eq (plist-get result :error) 'tmux-peek-error-no-server)
+           (funcall callback
+                    (list :ok t
+                          :value nil
+                          :source result))
+         (funcall callback result))))
    opts))
 
 (defun tmux-peek-version-async (callback &optional opts)
@@ -127,7 +129,9 @@ OPTS may include `:target' and `:tail-lines'."
        (funcall callback
                 (if (plist-get result :ok)
                     (list :ok t :value t :source result)
-                  (list :ok t :value nil :source result))))
+                  (if (eq (plist-get result :error) 'tmux-peek-error-no-target)
+                      (list :ok t :value nil :source result)
+                    result))))
      opts)))
 
 (defun tmux-peek-kill-pane-async (target callback &optional opts)
