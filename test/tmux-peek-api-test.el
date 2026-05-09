@@ -109,6 +109,22 @@
       (should (equal captured-args '("show-buffer" "-b" "buffer0")))
       (should (equal (plist-get captured-result :value) "buffer text\n")))))
 
+(ert-deftest tmux-peek-api-version-trims-value ()
+  (let (captured-args captured-result)
+    (cl-letf (((symbol-function 'tmux-peek--exec-async)
+               (lambda (_executable args callback &optional _opts)
+                 (setq captured-args args)
+                 (funcall callback
+                          (list :ok t
+                                :stdout "tmux 3.6a\n"
+                                :stderr ""
+                                :exit-code 0))
+                 :handle)))
+      (tmux-peek-version-async
+       (lambda (result) (setq captured-result result)))
+      (should (equal captured-args '("-V")))
+      (should (equal (plist-get captured-result :value) "tmux 3.6a")))))
+
 (ert-deftest tmux-peek-api-kill-pane-builds-only-kill-pane ()
   (let (captured-args captured-result)
     (cl-letf (((symbol-function 'tmux-peek--exec-async)

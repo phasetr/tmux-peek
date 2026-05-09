@@ -203,5 +203,14 @@
       (should (equal (plist-get target-missing :value) nil))
       (should (equal (plist-get message :value) tmux-peek-test--session)))))
 
+(ert-deftest tmux-peek-integration-version ()
+  (let ((version
+         (tmux-peek-test--wait
+          (lambda (callback)
+            (tmux-peek-version-async callback)))))
+    (should (plist-get version :ok))
+    (should (string-match-p (rx bos "tmux " (+ any))
+                            (plist-get version :value)))))
+
 (provide 'tmux-peek-integration-test)
 ;;; tmux-peek-integration-test.el ends here
