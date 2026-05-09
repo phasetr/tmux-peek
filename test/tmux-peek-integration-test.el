@@ -101,30 +101,29 @@
       (should (plist-get capture :ok))
       (should (string-match-p "ready\\|second" (plist-get capture :value))))))
 
-(ert-deftest tmux-peek-integration-kill-pane-only ()
+(ert-deftest tmux-peek-integration-kill-session-only ()
   (tmux-peek-test--with-session
-    (let* ((pane-opts (list :socket-name tmux-peek-test--socket
-                            :target (concat tmux-peek-test--session
-                                            ":" tmux-peek-test--window)))
-           (panes-before
+    (let* ((opts (list :socket-name tmux-peek-test--socket))
+           (sessions-before
             (tmux-peek-test--wait
              (lambda (callback)
-               (tmux-peek-list-panes-async callback pane-opts))))
-           (target (plist-get (cadr (plist-get panes-before :value)) :pane-id))
+               (tmux-peek-list-sessions-async callback opts))))
            (kill-result
             (tmux-peek-test--wait
              (lambda (callback)
-               (tmux-peek-kill-pane-async
-                target callback
-                (list :socket-name tmux-peek-test--socket)))))
-           (panes-after
+               (tmux-peek-kill-session-async
+                tmux-peek-test--session callback opts))))
+           (server-after
             (tmux-peek-test--wait
              (lambda (callback)
-               (tmux-peek-list-panes-async callback pane-opts)))))
-      (should (= (length (plist-get panes-before :value)) 2))
+               (tmux-peek-server-running-p-async callback opts)))))
+      (should (seq-some
+               (lambda (session)
+                 (equal (plist-get session :name) tmux-peek-test--session))
+               (plist-get sessions-before :value)))
       (should (plist-get kill-result :ok))
       (should (equal (plist-get kill-result :value) t))
-      (should (= (length (plist-get panes-after :value)) 1)))))
+      (should (equal (plist-get server-after :value) nil)))))
 
 (ert-deftest tmux-peek-integration-show-options-and-environment ()
   (tmux-peek-test--with-session

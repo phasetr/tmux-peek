@@ -6,14 +6,14 @@
 
 - 要求整理: `.self-local/tmux-peek-requirements.md`
 - この計画は確定仕様ではない. 実装しながら必要最小限を段階的に詳細化する
-- 主目的は tmux の live state 確認と, 余計な pane の明示的な `kill-pane`
+- 主目的は tmux の live state 確認と, 余計な session の明示的な `kill-session`
 - enkan-repl で対応できる start/send/attach/mirror 運用系は作らない
-- `kill-session`, `kill-window`, `kill-server` は危険な封印対象として実装しない
+- `kill-pane`, `kill-window`, `kill-server` は現状計画外として実装しない
 - 各段階の節目でリファクタリングする
 
 ## 0.1 現状
 
-- 土台, 非同期 executor, コマンド構築, parser, public async API, pane 削除, 統合確認, README 整理は実装済み
+- 土台, 非同期 executor, コマンド構築, parser, public async API, session 削除, 統合確認, README 整理は実装済み
 - `make check` は byte-compile, checkdoc, ERT を実行する
 - `make test-integration` は専用 tmux socket で実 tmux 3.6a 相当の挙動を確認する
 - 同期補助版は現段階では作らない
@@ -78,7 +78,7 @@
 - `display-message` の引数生成
 - `capture-pane` の引数生成
 - `show-*` 系の引数生成
-- `kill-pane` の引数生成
+- `kill-session` の引数生成
 
 作らないもの:
 
@@ -87,7 +87,7 @@
 - `split-window`
 - `send-keys`
 - `attach-session`
-- `kill-session`
+- `kill-pane`
 - `kill-window`
 - `kill-server`
 - tmux interactive UI 系
@@ -137,7 +137,7 @@
 - `tmux-peek-capture-pane-async`
 - `tmux-peek-target-exists-p-async`
 - `tmux-peek-server-running-p-async`
-- `tmux-peek-kill-pane-async`
+- `tmux-peek-kill-session-async`
 - `tmux-peek-list-clients-async`
 - `tmux-peek-list-buffers-async`
 - `tmux-peek-show-buffer-async`
@@ -155,18 +155,18 @@
 - public API を広げる前に命名と引数構造を見直す
 - 同期補助版を作る場合も非同期 executor の薄い wrapper に限定し, 別経路の tmux 実行実装は作らない
 
-## 6. Pane 削除
+## 6. Session 削除
 
 実装対象:
 
-- `tmux-peek-kill-pane-async`
+- `tmux-peek-kill-session-async`
 
 方針:
 
-- 呼び出し側が明示した pane target だけを削除する
+- 呼び出し側が明示した session target だけを削除する
 - 自動判定で kill する関数は作らない
 - `target-exists-p-async` と組み合わせやすい形にする
-- `kill-session`, `kill-window`, `kill-server` は API として存在させない
+- `kill-pane`, `kill-window`, `kill-server` は API として存在させない
 
 ## 7. 統合確認
 
@@ -185,7 +185,7 @@
 - show-environment
 - version
 - target exists
-- kill pane
+- kill session
 
 実 tmux 3.6a で確認する.
 
@@ -199,7 +199,7 @@
 - `capture-pane`
 - `server-running-p`
 - `target-exists-p`
-- `kill-pane`
+- `kill-session`
 
 作らないもの:
 
@@ -215,8 +215,8 @@ README に書くこと:
 - 非同期優先 API
 - enkan-repl との関係
 - `tail` 的取得は単発末尾取得
-- `kill-pane` だけを作る
-- `kill-session`, `kill-window`, `kill-server` は作らない
+- `kill-session` だけを作る
+- `kill-pane`, `kill-window`, `kill-server` は作らない
 - 同期補助版は現段階では未実装であり, 必要な理由は callback を受けられない呼び出し元との互換性に限る
 
 実施済みの整理:

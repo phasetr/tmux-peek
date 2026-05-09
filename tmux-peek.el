@@ -27,7 +27,7 @@
 
 ;; tmux-peek provides small asynchronous helpers for inspecting tmux live
 ;; state from Emacs Lisp.  It intentionally avoids broad operational wrappers:
-;; only `kill-pane' is exposed for cleanup of explicitly selected panes.
+;; only `kill-session' is exposed for cleanup of explicitly selected sessions.
 
 ;;; Code:
 

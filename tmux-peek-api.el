@@ -19,8 +19,8 @@
 
 ;;; Commentary:
 
-;; Public async API.  Only `kill-pane' is exposed for cleanup; broader kill
-;; commands are intentionally absent.
+;; Public async API.  Only `kill-session' is exposed for cleanup; window,
+;; pane, and server cleanup commands are intentionally absent.
 
 ;;; Code:
 
@@ -185,14 +185,14 @@ CALLBACK receives a result plist.  OPTS may override common tmux options."
                     result))))
      opts)))
 
-(defun tmux-peek-kill-pane-async (target callback &optional opts)
-  "Asynchronously kill the tmux pane TARGET.
+(defun tmux-peek-kill-session-async (target callback &optional opts)
+  "Asynchronously kill the tmux session TARGET.
 CALLBACK receives a result plist.  OPTS may override common tmux options.
-This package intentionally does not expose kill-session, kill-window, or
+This package intentionally does not expose kill-pane, kill-window, or
 kill-server wrappers."
   (let ((opts (plist-put (copy-sequence opts) :target target)))
     (tmux-peek--run-tmux-async
-     (tmux-peek--kill-pane-args opts)
+     (tmux-peek--kill-session-args opts)
      callback opts
      (lambda (_stdout) t))))
 

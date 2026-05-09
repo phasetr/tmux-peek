@@ -125,7 +125,7 @@
       (should (equal captured-args '("-V")))
       (should (equal (plist-get captured-result :value) "tmux 3.6a")))))
 
-(ert-deftest tmux-peek-api-kill-pane-builds-only-kill-pane ()
+(ert-deftest tmux-peek-api-kill-session-builds-only-kill-session ()
   (let (captured-args captured-result)
     (cl-letf (((symbol-function 'tmux-peek--exec-async)
                (lambda (_executable args callback &optional _opts)
@@ -133,11 +133,11 @@
                  (funcall callback
                           (list :ok t :stdout "" :stderr "" :exit-code 0))
                  :handle)))
-      (should (eq (tmux-peek-kill-pane-async
-                   "%1"
+      (should (eq (tmux-peek-kill-session-async
+                   "main"
                    (lambda (result) (setq captured-result result)))
                   :handle))
-      (should (equal captured-args '("kill-pane" "-t" "%1")))
+      (should (equal captured-args '("kill-session" "-t" "main")))
       (should (equal (plist-get captured-result :value) t)))))
 
 (ert-deftest tmux-peek-api-target-exists-turns-errors-into-nil ()

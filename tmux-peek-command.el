@@ -19,8 +19,8 @@
 
 ;;; Commentary:
 
-;; Builds tmux command argument lists.  Dangerous broad kill commands are
-;; intentionally absent.
+;; Builds tmux command argument lists.  Only session-level cleanup is exposed;
+;; window, pane, and server cleanup commands are intentionally absent.
 
 ;;; Code:
 
@@ -178,11 +178,11 @@
            (when-let* ((variable (plist-get opts :variable)))
              (list variable)))))
 
-(defun tmux-peek--kill-pane-args (&optional opts)
-  "Build args for tmux kill-pane and OPTS."
+(defun tmux-peek--kill-session-args (&optional opts)
+  "Build args for tmux kill-session and OPTS."
   (unless (plist-get opts :target)
-    (user-error "`tmux-peek-kill-pane-async' requires :target"))
-  (tmux-peek--build-args "kill-pane" opts (tmux-peek--target-args opts)))
+    (user-error "`tmux-peek-kill-session-async' requires :target"))
+  (tmux-peek--build-args "kill-session" opts (tmux-peek--target-args opts)))
 
 (provide 'tmux-peek-command)
 ;;; tmux-peek-command.el ends here

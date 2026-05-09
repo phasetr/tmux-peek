@@ -16,15 +16,15 @@ Codex must read this file before making implementation decisions.
 - It is built in this repository, `phasetr/tmux-peek`.
 - It is related to, but independent from, enkan-repl: <https://github.com/phasetr/enkan-repl>.
 - enkan-repl already handles start/send/attach/mirror operational flows. Do not reimplement those here.
-- tmux-peek should prioritize state inspection, one-shot pane capture, and explicit pane cleanup.
+- tmux-peek should prioritize state inspection, one-shot pane capture, and explicit session cleanup.
 
 ## Hard Scope Rules
 
 - Prioritize asynchronous APIs. Synchronous helpers are secondary.
 - Keep the package small. Do not add broad tmux wrappers without a concrete need.
-- Implement only `kill-pane` for cleanup.
+- Implement only `kill-session` for cleanup.
 - Do not expose or implement:
-  - `kill-session`
+  - `kill-pane`
   - `kill-window`
   - `kill-server`
   - `new-session`
@@ -33,7 +33,9 @@ Codex must read this file before making implementation decisions.
   - `send-keys`
   - `attach-session`
   - tmux interactive UI wrappers such as `choose-*`, `display-menu`, `display-popup`, `command-prompt`
-- The intent of cleanup is killing one pane, meaning one tmux split region. Larger kill operations are dangerous and intentionally sealed off.
+- The intent of cleanup is killing one explicitly selected tmux session, matching
+  enkan-repl's session-level tmux lifecycle. Window, pane, and server cleanup
+  wrappers are intentionally sealed off.
 
 ## Development Rules
 

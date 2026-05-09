@@ -6,7 +6,7 @@ asynchronously.
 It is a personal tool for GNU Emacs 30.1 and tmux 3.6a.  It is designed
 around the needs of [[https://github.com/phasetr/enkan-repl][enkan-repl]], but remains independent.  enkan-repl owns
 start/send/attach/mirror style operation flows; tmux-peek owns state
-inspection and explicit pane cleanup.
+inspection and explicit session cleanup.
 
 ** Current Scope
 
@@ -19,7 +19,7 @@ inspection and explicit pane cleanup.
 - Check whether a tmux server is running.
 - Check whether a target exists.
 - Return the tmux version string.
-- Kill only an explicitly selected pane through =kill-pane=.
+- Kill only an explicitly selected session through =kill-session=.
 
 All public command wrappers are asynchronous and call a callback with a
 result plist.
@@ -39,20 +39,20 @@ contain =:ok nil= and =:error=.
 
 tmux-peek intentionally does not provide wrappers for these tmux operations:
 
+- =kill-pane=
 - =send-keys=
 - =new-session=
 - =new-window=
 - =split-window=
 - =attach-session=
-- =kill-session=
 - =kill-window=
 - =kill-server=
 - tmux interactive UI commands such as =choose-*=, =display-menu=,
   =display-popup=, and =command-prompt=
 
-Only =kill-pane= is exposed for cleanup.  Broader kill operations are
-intentionally absent because they are too easy to aim at the wrong tmux
-object.
+Only =kill-session= is exposed for cleanup, because enkan-repl's tmux
+lifecycle is session-level.  Window, pane, and server cleanup wrappers are
+intentionally absent because they are not part of the current cleanup contract.
 
 ** Synchronous Helpers
 

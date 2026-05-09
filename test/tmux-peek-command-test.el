@@ -19,8 +19,8 @@
                  (concat "#{session_name}" tmux-peek--field-separator
                          "#{session_id}"))))
 
-(ert-deftest tmux-peek-kill-pane-requires-target ()
-  (should-error (tmux-peek--kill-pane-args nil)))
+(ert-deftest tmux-peek-kill-session-requires-target ()
+  (should-error (tmux-peek--kill-session-args nil)))
 
 (ert-deftest tmux-peek-list-clients-builds-format-args ()
   (let ((args (tmux-peek--list-args
@@ -46,8 +46,8 @@
                   '(:socket-name "peek" :target "s" :variable "PATH"))
                  '("-L" "peek" "show-environment" "-t" "s" "PATH"))))
 
-(ert-deftest tmux-peek-dangerous-kill-apis-are-not-defined ()
-  (should-not (fboundp 'tmux-peek-kill-session-async))
+(ert-deftest tmux-peek-non-session-kill-apis-are-not-defined ()
+  (should-not (fboundp 'tmux-peek-kill-pane-async))
   (should-not (fboundp 'tmux-peek-kill-window-async))
   (should-not (fboundp 'tmux-peek-kill-server-async)))
 
