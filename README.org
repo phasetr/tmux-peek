@@ -8,6 +8,21 @@ around the needs of [[https://github.com/phasetr/enkan-repl][enkan-repl]], but r
 start/send/attach/mirror style operation flows; tmux-peek owns state
 inspection and explicit session cleanup.
 
+** Installation
+
+With leaf and straight.el:
+
+#+begin_src elisp
+(leaf tmux-peek
+  :straight (:type git :host github :repo "phasetr/tmux-peek")
+  :require t)
+#+end_src
+
+** Documentation
+
+- [[file:docs/commands.org][Command reference]]
+- [[file:docs/usage.org][Usage]]
+
 ** Current Scope
 
 - Query sessions, windows, panes, clients, paste buffers, options, and
