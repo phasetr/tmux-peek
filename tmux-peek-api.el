@@ -101,6 +101,20 @@ OPTS may include `:target' and `:tail-lines'."
    callback opts
    #'identity))
 
+(defun tmux-peek-show-options-async (callback &optional opts)
+  "Asynchronously show tmux options."
+  (tmux-peek--run-tmux-async
+   (tmux-peek--show-options-args opts)
+   callback opts
+   #'tmux-peek--parse-show-options))
+
+(defun tmux-peek-show-environment-async (callback &optional opts)
+  "Asynchronously show tmux environment."
+  (tmux-peek--run-tmux-async
+   (tmux-peek--show-environment-args opts)
+   callback opts
+   #'tmux-peek--parse-show-environment))
+
 (defun tmux-peek-server-running-p-async (callback &optional opts)
   "Asynchronously report whether a tmux server is running."
   (tmux-peek-list-sessions-async

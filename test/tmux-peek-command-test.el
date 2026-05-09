@@ -21,6 +21,16 @@
 (ert-deftest tmux-peek-kill-pane-requires-target ()
   (should-error (tmux-peek--kill-pane-args nil)))
 
+(ert-deftest tmux-peek-show-options-builds-scope-args ()
+  (should (equal (tmux-peek--show-options-args
+                  '(:socket-name "peek" :global t :option "status"))
+                 '("-L" "peek" "show-options" "-g" "status"))))
+
+(ert-deftest tmux-peek-show-environment-builds-variable-args ()
+  (should (equal (tmux-peek--show-environment-args
+                  '(:socket-name "peek" :target "s" :variable "PATH"))
+                 '("-L" "peek" "show-environment" "-t" "s" "PATH"))))
+
 (ert-deftest tmux-peek-dangerous-kill-apis-are-not-defined ()
   (should-not (fboundp 'tmux-peek-kill-session-async))
   (should-not (fboundp 'tmux-peek-kill-window-async))

@@ -134,5 +134,35 @@
       (should (equal (plist-get captured-result :command)
                      '("tmux" "list-sessions"))))))
 
+(ert-deftest tmux-peek-api-show-options-maps-value ()
+  (let (captured-result)
+    (cl-letf (((symbol-function 'tmux-peek--exec-async)
+               (lambda (_executable _args callback &optional _opts)
+                 (funcall callback
+                          (list :ok t
+                                :stdout "status on\n"
+                                :stderr ""
+                                :exit-code 0))
+                 :handle)))
+      (tmux-peek-show-options-async
+       (lambda (result) (setq captured-result result)))
+      (should (equal (plist-get captured-result :value)
+                     '(("status" . "on")))))))
+
+(ert-deftest tmux-peek-api-show-environment-maps-value ()
+  (let (captured-result)
+    (cl-letf (((symbol-function 'tmux-peek--exec-async)
+               (lambda (_executable _args callback &optional _opts)
+                 (funcall callback
+                          (list :ok t
+                                :stdout "PATH=/bin\n-OLD\n"
+                                :stderr ""
+                                :exit-code 0))
+                 :handle)))
+      (tmux-peek-show-environment-async
+       (lambda (result) (setq captured-result result)))
+      (should (equal (plist-get captured-result :value)
+                     '(("PATH" . "/bin") ("OLD")))))))
+
 (provide 'tmux-peek-api-test)
 ;;; tmux-peek-api-test.el ends here

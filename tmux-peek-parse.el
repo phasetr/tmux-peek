@@ -78,5 +78,36 @@
   "Parse list-panes STDOUT."
   (tmux-peek--parse-list stdout (or fields tmux-peek-default-pane-fields)))
 
+(defun tmux-peek--parse-show-options (stdout)
+  "Parse show-options STDOUT into an alist."
+  (mapcar
+   (lambda (line)
+     (if (string-match (rx bos (group (+ (not space))) (* space)
+                           (group (* any)) eos)
+                       line)
+         (cons (match-string 1 line)
+               (match-string 2 line))
+       (signal 'tmux-peek-error-parse
+               (list (format "Invalid show-options line: %S" line)))))
+   (split-string (string-trim-right (or stdout "")) "\n" t)))
+
+(defun tmux-peek--parse-show-environment (stdout)
+  "Parse show-environment STDOUT into an alist.
+Unset variables are returned as (NAME . nil)."
+  (mapcar
+   (lambda (line)
+     (cond
+      ((string-prefix-p "-" line)
+       (cons (substring line 1) nil))
+      ((string-match (rx bos (group (+ (not (any "=")))) "="
+                         (group (* any)) eos)
+                     line)
+       (cons (match-string 1 line)
+             (match-string 2 line)))
+      (t
+       (signal 'tmux-peek-error-parse
+               (list (format "Invalid show-environment line: %S" line))))))
+   (split-string (string-trim-right (or stdout "")) "\n" t)))
+
 (provide 'tmux-peek-parse)
 ;;; tmux-peek-parse.el ends here

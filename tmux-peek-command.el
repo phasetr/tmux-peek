@@ -145,6 +145,25 @@
    (when-let* ((buffer-name (plist-get opts :buffer-name)))
      (list "-b" buffer-name))))
 
+(defun tmux-peek--show-options-args (&optional opts)
+  "Build args for tmux show-options and OPTS."
+  (tmux-peek--build-args
+   "show-options" opts
+   (append (when (plist-get opts :global) (list "-g"))
+           (when (plist-get opts :window) (list "-w"))
+           (tmux-peek--target-args opts)
+           (when-let* ((option (plist-get opts :option)))
+             (list option)))))
+
+(defun tmux-peek--show-environment-args (&optional opts)
+  "Build args for tmux show-environment and OPTS."
+  (tmux-peek--build-args
+   "show-environment" opts
+   (append (when (plist-get opts :global) (list "-g"))
+           (tmux-peek--target-args opts)
+           (when-let* ((variable (plist-get opts :variable)))
+             (list variable)))))
+
 (defun tmux-peek--kill-pane-args (&optional opts)
   "Build args for tmux kill-pane and OPTS."
   (unless (plist-get opts :target)

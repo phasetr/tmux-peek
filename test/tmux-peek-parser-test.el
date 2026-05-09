@@ -38,5 +38,17 @@
    (tmux-peek--parse-list-sessions "main\x1f$0\n")
    :type 'tmux-peek-error-parse))
 
+(ert-deftest tmux-peek-parse-show-options ()
+  (should (equal (tmux-peek--parse-show-options
+                  "status on\nbase-index 1\n")
+                 '(("status" . "on")
+                   ("base-index" . "1")))))
+
+(ert-deftest tmux-peek-parse-show-environment ()
+  (should (equal (tmux-peek--parse-show-environment
+                  "PATH=/bin\n-OLD\n")
+                 '(("PATH" . "/bin")
+                   ("OLD")))))
+
 (provide 'tmux-peek-parser-test)
 ;;; tmux-peek-parser-test.el ends here

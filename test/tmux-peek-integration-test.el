@@ -37,6 +37,9 @@
    "new-session" "-d" "-s" tmux-peek-test--session
    "-n" tmux-peek-test--window "printf ready; while true; do sleep 1; done")
   (tmux-peek-test--tmux-ok
+   "set-environment" "-t" tmux-peek-test--session
+   "TMUX_PEEK_TEST_ENV" "ok")
+  (tmux-peek-test--tmux-ok
    "split-window" "-d" "-t" (concat tmux-peek-test--session ":" tmux-peek-test--window)
    "printf second; while true; do sleep 1; done"))
 
@@ -119,6 +122,31 @@
       (should (plist-get kill-result :ok))
       (should (equal (plist-get kill-result :value) t))
       (should (= (length (plist-get panes-after :value)) 1)))))
+
+(ert-deftest tmux-peek-integration-show-options-and-environment ()
+  (tmux-peek-test--with-session
+    (let* ((opts (list :socket-name tmux-peek-test--socket
+                       :target tmux-peek-test--session))
+           (options
+            (tmux-peek-test--wait
+             (lambda (callback)
+               (tmux-peek-show-options-async
+                callback
+                (list :socket-name tmux-peek-test--socket
+                      :global t
+                      :option "status")))))
+           (environment
+            (tmux-peek-test--wait
+             (lambda (callback)
+               (tmux-peek-show-environment-async
+                callback
+                (append opts (list :variable "TMUX_PEEK_TEST_ENV")))))))
+      (should (plist-get options :ok))
+      (should (assoc "status" (plist-get options :value)))
+      (should (plist-get environment :ok))
+      (should (equal (cdr (assoc "TMUX_PEEK_TEST_ENV"
+                                 (plist-get environment :value)))
+                     "ok")))))
 
 (provide 'tmux-peek-integration-test)
 ;;; tmux-peek-integration-test.el ends here
