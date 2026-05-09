@@ -93,13 +93,13 @@
   "Timeout HANDLE, terminating its process and reporting timeout."
   (unless (tmux-peek-handle-done handle)
     (setf (tmux-peek-handle-done handle) t)
-      (let ((process (tmux-peek-handle-process handle))
-            (stdout (tmux-peek--buffer-string
-                     (tmux-peek-handle-stdout-buffer handle)))
-            (stderr (tmux-peek--buffer-string
-                     (tmux-peek-handle-stderr-buffer handle))))
-        (when (process-live-p process)
-          (delete-process process))
+    (let ((process (tmux-peek-handle-process handle))
+          (stdout (tmux-peek--buffer-string
+                   (tmux-peek-handle-stdout-buffer handle)))
+          (stderr (tmux-peek--buffer-string
+                   (tmux-peek-handle-stderr-buffer handle))))
+      (when (process-live-p process)
+        (delete-process process))
       (tmux-peek--cleanup-handle handle)
       (funcall (tmux-peek-handle-callback handle)
                (list :ok nil

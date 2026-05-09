@@ -141,13 +141,14 @@
 - `tmux-peek-show-buffer-async`
 - `tmux-peek-show-options-async`
 - `tmux-peek-show-environment-async`
-- 同期補助版
+- 同期補助版: 現段階では作らない. callback を受けられない呼び出し元が明確になった場合だけ検討する
 
 方針:
 
 - 必要最低限だけ作る
 - 便利 API は要求が明確になるまで作らない
 - public API を広げる前に命名と引数構造を見直す
+- 同期補助版を作る場合も非同期 executor の薄い wrapper に限定し, 別経路の tmux 実行実装は作らない
 
 ## 6. Pane 削除
 
@@ -206,6 +207,7 @@ README に書くこと:
 - `tail` 的取得は単発末尾取得
 - `kill-pane` だけを作る
 - `kill-session`, `kill-window`, `kill-server` は作らない
+- 同期補助版は現段階では未実装であり, 必要な理由は callback を受けられない呼び出し元との互換性に限る
 
 最後にやること:
 

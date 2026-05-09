@@ -56,45 +56,47 @@ When MAPPER is non-nil, use it to build `:value' from stdout."
    (if mapper (tmux-peek--map-result callback mapper) callback)
    opts))
 
+(defun tmux-peek--list-command-async (command fields parser callback opts)
+  "Run tmux list COMMAND using FIELDS, PARSER, CALLBACK, and OPTS."
+  (tmux-peek--run-tmux-async
+   (tmux-peek--list-args command fields opts)
+   callback opts
+   (lambda (stdout) (funcall parser stdout fields))))
+
+(defun tmux-peek--result-has-value-p (result)
+  "Return non-nil when RESULT has a non-empty `:value'."
+  (not (string-empty-p (string-trim-right
+                        (or (plist-get result :value) "")))))
+
 (defun tmux-peek-list-sessions-async (callback &optional opts)
   "Asynchronously list tmux sessions."
   (let ((fields (or (plist-get opts :fields) tmux-peek-default-session-fields)))
-    (tmux-peek--run-tmux-async
-     (tmux-peek--list-args "list-sessions" fields opts)
-     callback opts
-     (lambda (stdout) (tmux-peek--parse-list-sessions stdout fields)))))
+    (tmux-peek--list-command-async
+     "list-sessions" fields #'tmux-peek--parse-list-sessions callback opts)))
 
 (defun tmux-peek-list-windows-async (callback &optional opts)
   "Asynchronously list tmux windows."
   (let ((fields (or (plist-get opts :fields) tmux-peek-default-window-fields)))
-    (tmux-peek--run-tmux-async
-     (tmux-peek--list-args "list-windows" fields opts)
-     callback opts
-     (lambda (stdout) (tmux-peek--parse-list-windows stdout fields)))))
+    (tmux-peek--list-command-async
+     "list-windows" fields #'tmux-peek--parse-list-windows callback opts)))
 
 (defun tmux-peek-list-panes-async (callback &optional opts)
   "Asynchronously list tmux panes."
   (let ((fields (or (plist-get opts :fields) tmux-peek-default-pane-fields)))
-    (tmux-peek--run-tmux-async
-     (tmux-peek--list-args "list-panes" fields opts)
-     callback opts
-     (lambda (stdout) (tmux-peek--parse-list-panes stdout fields)))))
+    (tmux-peek--list-command-async
+     "list-panes" fields #'tmux-peek--parse-list-panes callback opts)))
 
 (defun tmux-peek-list-clients-async (callback &optional opts)
   "Asynchronously list tmux clients."
   (let ((fields (or (plist-get opts :fields) tmux-peek-default-client-fields)))
-    (tmux-peek--run-tmux-async
-     (tmux-peek--list-args "list-clients" fields opts)
-     callback opts
-     (lambda (stdout) (tmux-peek--parse-list-clients stdout fields)))))
+    (tmux-peek--list-command-async
+     "list-clients" fields #'tmux-peek--parse-list-clients callback opts)))
 
 (defun tmux-peek-list-buffers-async (callback &optional opts)
   "Asynchronously list tmux paste buffers."
   (let ((fields (or (plist-get opts :fields) tmux-peek-default-buffer-fields)))
-    (tmux-peek--run-tmux-async
-     (tmux-peek--list-args "list-buffers" fields opts)
-     callback opts
-     (lambda (stdout) (tmux-peek--parse-list-buffers stdout fields)))))
+    (tmux-peek--list-command-async
+     "list-buffers" fields #'tmux-peek--parse-list-buffers callback opts)))
 
 (defun tmux-peek-display-message-async (format callback &optional opts)
   "Asynchronously expand tmux FORMAT using display-message."
@@ -160,9 +162,7 @@ OPTS may include `:target' and `:tail-lines'."
        (funcall callback
                 (if (plist-get result :ok)
                     (list :ok t
-                          :value (not (string-empty-p
-                                       (string-trim-right
-                                        (or (plist-get result :value) ""))))
+                          :value (tmux-peek--result-has-value-p result)
                           :source result)
                   (if (eq (plist-get result :error) 'tmux-peek-error-no-target)
                       (list :ok t :value nil :source result)

@@ -24,7 +24,6 @@
 
 ;;; Code:
 
-(require 'cl-lib)
 (require 'subr-x)
 
 (defcustom tmux-peek-tmux-executable "tmux"
