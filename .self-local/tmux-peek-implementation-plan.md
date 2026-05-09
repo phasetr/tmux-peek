@@ -11,6 +11,14 @@
 - `kill-session`, `kill-window`, `kill-server` は危険な封印対象として実装しない
 - 各段階の節目でリファクタリングする
 
+## 0.1 現状
+
+- 土台, 非同期 executor, コマンド構築, parser, public async API, pane 削除, 統合確認, README 整理は実装済み
+- `make check` は byte-compile, checkdoc, ERT を実行する
+- `make test-integration` は専用 tmux socket で実 tmux 3.6a 相当の挙動を確認する
+- 同期補助版は現段階では作らない
+- 残作業はバグ修正, 要求変更への追随, phase boundary でのリファクタリングに限定する
+
 ## 1. 土台作成
 
 - `tmux-peek.el`
@@ -136,11 +144,11 @@
 
 後回し候補:
 
-- `tmux-peek-list-clients-async`
-- `tmux-peek-list-buffers-async`
-- `tmux-peek-show-buffer-async`
-- `tmux-peek-show-options-async`
-- `tmux-peek-show-environment-async`
+- `tmux-peek-list-clients-async`: 実装済み
+- `tmux-peek-list-buffers-async`: 実装済み
+- `tmux-peek-show-buffer-async`: 実装済み
+- `tmux-peek-show-options-async`: 実装済み
+- `tmux-peek-show-environment-async`: 実装済み
 - 同期補助版: 現段階では作らない. callback を受けられない呼び出し元が明確になった場合だけ検討する
 
 方針:
@@ -171,9 +179,14 @@
 - list sessions
 - list windows
 - list panes
+- list buffers
 - display message
 - capture pane
 - `:tail-lines`
+- show-buffer
+- show-options
+- show-environment
+- version
 - target exists
 - kill pane
 

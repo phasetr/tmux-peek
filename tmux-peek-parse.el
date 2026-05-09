@@ -67,23 +67,23 @@
      lines)))
 
 (defun tmux-peek--parse-list-sessions (stdout &optional fields)
-  "Parse list-sessions STDOUT."
+  "Parse list-sessions STDOUT using optional FIELDS."
   (tmux-peek--parse-list stdout (or fields tmux-peek-default-session-fields)))
 
 (defun tmux-peek--parse-list-windows (stdout &optional fields)
-  "Parse list-windows STDOUT."
+  "Parse list-windows STDOUT using optional FIELDS."
   (tmux-peek--parse-list stdout (or fields tmux-peek-default-window-fields)))
 
 (defun tmux-peek--parse-list-panes (stdout &optional fields)
-  "Parse list-panes STDOUT."
+  "Parse list-panes STDOUT using optional FIELDS."
   (tmux-peek--parse-list stdout (or fields tmux-peek-default-pane-fields)))
 
 (defun tmux-peek--parse-list-clients (stdout &optional fields)
-  "Parse list-clients STDOUT."
+  "Parse list-clients STDOUT using optional FIELDS."
   (tmux-peek--parse-list stdout (or fields tmux-peek-default-client-fields)))
 
 (defun tmux-peek--parse-list-buffers (stdout &optional fields)
-  "Parse list-buffers STDOUT."
+  "Parse `list-buffers' STDOUT using optional FIELDS."
   (tmux-peek--parse-list stdout (or fields tmux-peek-default-buffer-fields)))
 
 (defun tmux-peek--parse-show-options (stdout)

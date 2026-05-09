@@ -30,7 +30,7 @@
 (require 'subr-x)
 
 (defun tmux-peek--map-result (callback mapper)
-  "Return callback that maps a successful result through MAPPER."
+  "Return CALLBACK wrapper that maps a successful result through MAPPER."
   (lambda (result)
     (if (plist-get result :ok)
         (condition-case err
@@ -49,7 +49,8 @@
 
 (defun tmux-peek--run-tmux-async (args callback &optional opts mapper)
   "Run tmux ARGS and call CALLBACK.
-When MAPPER is non-nil, use it to build `:value' from stdout."
+When OPTS is non-nil, pass it to the async executor.  When MAPPER is non-nil,
+use it to build `:value' from stdout."
   (tmux-peek--exec-async
    (tmux-peek--tmux-executable opts)
    args
@@ -69,37 +70,43 @@ When MAPPER is non-nil, use it to build `:value' from stdout."
                         (or (plist-get result :value) "")))))
 
 (defun tmux-peek-list-sessions-async (callback &optional opts)
-  "Asynchronously list tmux sessions."
+  "Asynchronously list tmux sessions.
+CALLBACK receives a result plist.  OPTS may override common tmux options."
   (let ((fields (or (plist-get opts :fields) tmux-peek-default-session-fields)))
     (tmux-peek--list-command-async
      "list-sessions" fields #'tmux-peek--parse-list-sessions callback opts)))
 
 (defun tmux-peek-list-windows-async (callback &optional opts)
-  "Asynchronously list tmux windows."
+  "Asynchronously list tmux windows.
+CALLBACK receives a result plist.  OPTS may override common tmux options."
   (let ((fields (or (plist-get opts :fields) tmux-peek-default-window-fields)))
     (tmux-peek--list-command-async
      "list-windows" fields #'tmux-peek--parse-list-windows callback opts)))
 
 (defun tmux-peek-list-panes-async (callback &optional opts)
-  "Asynchronously list tmux panes."
+  "Asynchronously list tmux panes.
+CALLBACK receives a result plist.  OPTS may override common tmux options."
   (let ((fields (or (plist-get opts :fields) tmux-peek-default-pane-fields)))
     (tmux-peek--list-command-async
      "list-panes" fields #'tmux-peek--parse-list-panes callback opts)))
 
 (defun tmux-peek-list-clients-async (callback &optional opts)
-  "Asynchronously list tmux clients."
+  "Asynchronously list tmux clients.
+CALLBACK receives a result plist.  OPTS may override common tmux options."
   (let ((fields (or (plist-get opts :fields) tmux-peek-default-client-fields)))
     (tmux-peek--list-command-async
      "list-clients" fields #'tmux-peek--parse-list-clients callback opts)))
 
 (defun tmux-peek-list-buffers-async (callback &optional opts)
-  "Asynchronously list tmux paste buffers."
+  "Asynchronously list tmux paste buffers.
+CALLBACK receives a result plist.  OPTS may override common tmux options."
   (let ((fields (or (plist-get opts :fields) tmux-peek-default-buffer-fields)))
     (tmux-peek--list-command-async
      "list-buffers" fields #'tmux-peek--parse-list-buffers callback opts)))
 
 (defun tmux-peek-display-message-async (format callback &optional opts)
-  "Asynchronously expand tmux FORMAT using display-message."
+  "Asynchronously expand tmux FORMAT using display-message.
+CALLBACK receives a result plist.  OPTS may override common tmux options."
   (tmux-peek--run-tmux-async
    (tmux-peek--display-message-args format opts)
    callback opts
@@ -107,35 +114,42 @@ When MAPPER is non-nil, use it to build `:value' from stdout."
 
 (defun tmux-peek-capture-pane-async (callback &optional opts)
   "Asynchronously capture a tmux pane.
-OPTS may include `:target' and `:tail-lines'."
+CALLBACK receives a result plist.  OPTS may include `:target' and
+`:tail-lines'."
   (tmux-peek--run-tmux-async
    (tmux-peek--capture-pane-args opts)
    callback opts
    #'identity))
 
 (defun tmux-peek-show-buffer-async (callback &optional opts)
-  "Asynchronously show a tmux paste buffer."
+  "Asynchronously show a tmux paste buffer.
+CALLBACK receives a result plist.  OPTS may include `:buffer-name'."
   (tmux-peek--run-tmux-async
    (tmux-peek--show-buffer-args opts)
    callback opts
    #'identity))
 
 (defun tmux-peek-show-options-async (callback &optional opts)
-  "Asynchronously show tmux options."
+  "Asynchronously show tmux options.
+CALLBACK receives a result plist.  OPTS may include `:global', `:window',
+`:target', and `:option'."
   (tmux-peek--run-tmux-async
    (tmux-peek--show-options-args opts)
    callback opts
    #'tmux-peek--parse-show-options))
 
 (defun tmux-peek-show-environment-async (callback &optional opts)
-  "Asynchronously show tmux environment."
+  "Asynchronously show tmux environment.
+CALLBACK receives a result plist.  OPTS may include `:global', `:target', and
+`:variable'."
   (tmux-peek--run-tmux-async
    (tmux-peek--show-environment-args opts)
    callback opts
    #'tmux-peek--parse-show-environment))
 
 (defun tmux-peek-server-running-p-async (callback &optional opts)
-  "Asynchronously report whether a tmux server is running."
+  "Asynchronously report whether a tmux server is running.
+CALLBACK receives a result plist.  OPTS may override common tmux options."
   (tmux-peek-list-sessions-async
    (lambda (result)
      (if (plist-get result :ok)
@@ -149,12 +163,14 @@ OPTS may include `:target' and `:tail-lines'."
    opts))
 
 (defun tmux-peek-version-async (callback &optional opts)
-  "Asynchronously return the tmux version string."
+  "Asynchronously return the tmux version string.
+CALLBACK receives a result plist.  OPTS may override common tmux options."
   (tmux-peek--run-tmux-async
    '("-V") callback opts #'string-trim-right))
 
 (defun tmux-peek-target-exists-p-async (target callback &optional opts)
-  "Asynchronously report whether TARGET exists."
+  "Asynchronously report whether TARGET exists.
+CALLBACK receives a result plist.  OPTS may override common tmux options."
   (let ((opts (plist-put (copy-sequence opts) :target target)))
     (tmux-peek-display-message-async
      "#{pane_id}"
@@ -171,6 +187,7 @@ OPTS may include `:target' and `:tail-lines'."
 
 (defun tmux-peek-kill-pane-async (target callback &optional opts)
   "Asynchronously kill the tmux pane TARGET.
+CALLBACK receives a result plist.  OPTS may override common tmux options.
 This package intentionally does not expose kill-session, kill-window, or
 kill-server wrappers."
   (let ((opts (plist-put (copy-sequence opts) :target target)))
