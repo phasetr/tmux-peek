@@ -78,6 +78,37 @@
                         :created 1715240020
                         :sample "hello")))))))
 
+(ert-deftest tmux-peek-api-display-message-trims-value ()
+  (let (captured-args captured-result)
+    (cl-letf (((symbol-function 'tmux-peek--exec-async)
+               (lambda (_executable args callback &optional _opts)
+                 (setq captured-args args)
+                 (funcall callback
+                          (list :ok t :stdout "%1\n" :stderr "" :exit-code 0))
+                 :handle)))
+      (tmux-peek-display-message-async
+       "#{pane_id}" (lambda (result) (setq captured-result result)))
+      (should (equal captured-args
+                     '("display-message" "-p" "#{pane_id}")))
+      (should (equal (plist-get captured-result :value) "%1")))))
+
+(ert-deftest tmux-peek-api-show-buffer-keeps-value ()
+  (let (captured-args captured-result)
+    (cl-letf (((symbol-function 'tmux-peek--exec-async)
+               (lambda (_executable args callback &optional _opts)
+                 (setq captured-args args)
+                 (funcall callback
+                          (list :ok t
+                                :stdout "buffer text\n"
+                                :stderr ""
+                                :exit-code 0))
+                 :handle)))
+      (tmux-peek-show-buffer-async
+       (lambda (result) (setq captured-result result))
+       '(:buffer-name "buffer0"))
+      (should (equal captured-args '("show-buffer" "-b" "buffer0")))
+      (should (equal (plist-get captured-result :value) "buffer text\n")))))
+
 (ert-deftest tmux-peek-api-kill-pane-builds-only-kill-pane ()
   (let (captured-args captured-result)
     (cl-letf (((symbol-function 'tmux-peek--exec-async)
@@ -103,6 +134,21 @@
                                 :stdout ""
                                 :stderr "can't find pane"
                                 :exit-code 1))
+                 :handle)))
+      (tmux-peek-target-exists-p-async
+       "%missing" (lambda (result) (setq captured-result result)))
+      (should (plist-get captured-result :ok))
+      (should-not (plist-get captured-result :value)))))
+
+(ert-deftest tmux-peek-api-target-exists-turns-empty-success-into-nil ()
+  (let (captured-result)
+    (cl-letf (((symbol-function 'tmux-peek--exec-async)
+               (lambda (_executable _args callback &optional _opts)
+                 (funcall callback
+                          (list :ok t
+                                :stdout "\n"
+                                :stderr ""
+                                :exit-code 0))
                  :handle)))
       (tmux-peek-target-exists-p-async
        "%missing" (lambda (result) (setq captured-result result)))

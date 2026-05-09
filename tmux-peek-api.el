@@ -27,6 +27,7 @@
 (require 'tmux-peek-async)
 (require 'tmux-peek-command)
 (require 'tmux-peek-parse)
+(require 'subr-x)
 
 (defun tmux-peek--map-result (callback mapper)
   "Return callback that maps a successful result through MAPPER."
@@ -158,7 +159,11 @@ OPTS may include `:target' and `:tail-lines'."
      (lambda (result)
        (funcall callback
                 (if (plist-get result :ok)
-                    (list :ok t :value t :source result)
+                    (list :ok t
+                          :value (not (string-empty-p
+                                       (string-trim-right
+                                        (or (plist-get result :value) ""))))
+                          :source result)
                   (if (eq (plist-get result :error) 'tmux-peek-error-no-target)
                       (list :ok t :value nil :source result)
                     result))))

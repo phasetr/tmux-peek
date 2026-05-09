@@ -153,18 +153,55 @@
 
 (ert-deftest tmux-peek-integration-list-buffers ()
   (tmux-peek-test--with-session
-    (let ((buffers
+    (let* ((buffers
            (tmux-peek-test--wait
             (lambda (callback)
               (tmux-peek-list-buffers-async
                callback
-               (list :socket-name tmux-peek-test--socket))))))
+               (list :socket-name tmux-peek-test--socket)))))
+           (buffer-text
+            (tmux-peek-test--wait
+             (lambda (callback)
+               (tmux-peek-show-buffer-async
+                callback
+                (list :socket-name tmux-peek-test--socket
+                      :buffer-name "tmux-peek-test-buffer"))))))
       (should (plist-get buffers :ok))
       (should (seq-some
                (lambda (buffer)
                  (and (equal (plist-get buffer :name) "tmux-peek-test-buffer")
                       (equal (plist-get buffer :sample) "buffer-text")))
-               (plist-get buffers :value))))))
+               (plist-get buffers :value)))
+      (should (plist-get buffer-text :ok))
+      (should (equal (plist-get buffer-text :value) "buffer-text")))))
+
+(ert-deftest tmux-peek-integration-server-and-target-helpers ()
+  (tmux-peek-test--with-session
+    (let* ((opts (list :socket-name tmux-peek-test--socket))
+           (target (concat tmux-peek-test--session ":" tmux-peek-test--window))
+           (server-running
+            (tmux-peek-test--wait
+             (lambda (callback)
+               (tmux-peek-server-running-p-async callback opts))))
+           (target-exists
+            (tmux-peek-test--wait
+             (lambda (callback)
+               (tmux-peek-target-exists-p-async target callback opts))))
+           (target-missing
+            (tmux-peek-test--wait
+             (lambda (callback)
+               (tmux-peek-target-exists-p-async
+                "%999999" callback opts))))
+           (message
+            (tmux-peek-test--wait
+             (lambda (callback)
+               (tmux-peek-display-message-async
+                "#{session_name}" callback
+                (append opts (list :target target)))))))
+      (should (equal (plist-get server-running :value) t))
+      (should (equal (plist-get target-exists :value) t))
+      (should (equal (plist-get target-missing :value) nil))
+      (should (equal (plist-get message :value) tmux-peek-test--session)))))
 
 (provide 'tmux-peek-integration-test)
 ;;; tmux-peek-integration-test.el ends here
