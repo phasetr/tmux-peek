@@ -65,5 +65,24 @@
       (should (plist-get captured-result :ok))
       (should-not (plist-get captured-result :value)))))
 
+(ert-deftest tmux-peek-api-parse-error-returns-clean-failure ()
+  (let (captured-result)
+    (cl-letf (((symbol-function 'tmux-peek--exec-async)
+               (lambda (_executable _args callback &optional _opts)
+                 (funcall callback
+                          (list :ok t
+                                :stdout "too-few-fields"
+                                :stderr ""
+                                :exit-code 0
+                                :command '("tmux" "list-sessions")))
+                 :handle)))
+      (tmux-peek-list-sessions-async
+       (lambda (result) (setq captured-result result)))
+      (should-not (plist-get captured-result :ok))
+      (should (eq (plist-get captured-result :error)
+                  'tmux-peek-error-parse))
+      (should (equal (plist-get captured-result :command)
+                     '("tmux" "list-sessions"))))))
+
 (provide 'tmux-peek-api-test)
 ;;; tmux-peek-api-test.el ends here

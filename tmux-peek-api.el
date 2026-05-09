@@ -38,11 +38,12 @@
                                 (funcall mapper (plist-get result :stdout))))
           (tmux-peek-error
            (funcall callback
-                    (append (list :ok nil
-                                  :error (car err)
-                                  :stderr (cadr err)
-                                  :exit-code nil)
-                            result))))
+                    (list :ok nil
+                          :error (car err)
+                          :stdout (plist-get result :stdout)
+                          :stderr (or (cadr err) "")
+                          :exit-code (plist-get result :exit-code)
+                          :command (plist-get result :command)))))
       (funcall callback result))))
 
 (defun tmux-peek--run-tmux-async (args callback &optional opts mapper)
