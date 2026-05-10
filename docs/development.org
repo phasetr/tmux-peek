@@ -37,6 +37,21 @@ When module dependencies changed, reload the files in dependency order:
 (load "/path/to/tmux-peek/tmux-peek.el" nil 'nomessage)
 #+end_src
 
+For session list UI changes, always load =tmux-peek-session-list.el= from the
+source path shown above.  The mode keymap is updated in place so existing
+=*tmux-peek sessions*= buffers pick up changed keys after reload.  You can
+verify the active bindings from that buffer:
+
+#+begin_src elisp
+(key-binding (kbd "RET"))
+(key-binding (kbd "v"))
+(key-binding (kbd "t"))
+#+end_src
+
+They should all return =tmux-peek-session-list-view=.  If the buffer content
+itself is stale, run =M-x tmux-peek-session-list-refresh= or reopen
+=M-x tmux-peek-session-list=.
+
 If behavior still looks stale, start a fresh Emacs.  Async process sentinels
 and old callback closures can keep old definitions alive until their process
 finishes.

@@ -44,6 +44,23 @@
     (should (eq (key-binding (kbd "d")) #'tmux-peek-session-list-kill))
     (should (eq (key-binding (kbd "g")) #'tmux-peek-session-list-refresh))))
 
+(ert-deftest tmux-peek-session-list-setup-keymap-updates-existing-map ()
+  (let ((original-map tmux-peek-session-list-mode-map))
+    (unwind-protect
+        (let ((stale-map (make-sparse-keymap)))
+          (setq tmux-peek-session-list-mode-map stale-map)
+          (with-temp-buffer
+            (use-local-map stale-map)
+            (tmux-peek-session-list--setup-keymap)
+            (should (eq (key-binding (kbd "RET"))
+                        #'tmux-peek-session-list-view))
+            (should (eq (key-binding (kbd "v"))
+                        #'tmux-peek-session-list-view))
+            (should (eq (key-binding (kbd "t"))
+                        #'tmux-peek-session-list-view))))
+      (setq tmux-peek-session-list-mode-map original-map)
+      (tmux-peek-session-list--setup-keymap))))
+
 (ert-deftest tmux-peek-session-list-view-captures-first-pane ()
   (with-temp-buffer
     (tmux-peek-session-list-mode)

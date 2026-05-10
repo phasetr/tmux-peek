@@ -147,7 +147,7 @@ Opens an Emacs buffer listing tmux sessions.  The buffer supports:
 |---|---|
 | =RET=, =v=, =t= | view one-shot tail-like content for the session |
 | =g=, =r= | refresh session list |
-| =d=, =k= | kill the session at point |
+| =d=, =k= | confirm, then kill the session at point |
 | =q= | quit the session list buffer |
 
 This is the primary interactive command for listing sessions and deleting

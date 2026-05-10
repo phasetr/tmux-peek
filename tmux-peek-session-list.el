@@ -42,19 +42,29 @@
 (defconst tmux-peek-session-list--help-text
   "Keys: RET/v/t view tail | d/k delete session | g/r refresh | q quit\n\n")
 
-(defvar tmux-peek-session-list-mode-map
-  (let ((map (make-sparse-keymap)))
-    (set-keymap-parent map tabulated-list-mode-map)
-    (define-key map (kbd "g") #'tmux-peek-session-list-refresh)
-    (define-key map (kbd "r") #'tmux-peek-session-list-refresh)
-    (define-key map (kbd "RET") #'tmux-peek-session-list-view)
-    (define-key map (kbd "v") #'tmux-peek-session-list-view)
-    (define-key map (kbd "t") #'tmux-peek-session-list-view)
-    (define-key map (kbd "d") #'tmux-peek-session-list-kill)
-    (define-key map (kbd "k") #'tmux-peek-session-list-kill)
-    (define-key map (kbd "q") #'quit-window)
-    map)
+(defvar tmux-peek-session-list-mode-map (make-sparse-keymap)
   "Keymap for `tmux-peek-session-list-mode'.")
+
+(defun tmux-peek-session-list--setup-keymap ()
+  "Install tmux-peek session list bindings into the mode keymap."
+  (set-keymap-parent tmux-peek-session-list-mode-map tabulated-list-mode-map)
+  (define-key tmux-peek-session-list-mode-map (kbd "g")
+              #'tmux-peek-session-list-refresh)
+  (define-key tmux-peek-session-list-mode-map (kbd "r")
+              #'tmux-peek-session-list-refresh)
+  (define-key tmux-peek-session-list-mode-map (kbd "RET")
+              #'tmux-peek-session-list-view)
+  (define-key tmux-peek-session-list-mode-map (kbd "v")
+              #'tmux-peek-session-list-view)
+  (define-key tmux-peek-session-list-mode-map (kbd "t")
+              #'tmux-peek-session-list-view)
+  (define-key tmux-peek-session-list-mode-map (kbd "d")
+              #'tmux-peek-session-list-kill)
+  (define-key tmux-peek-session-list-mode-map (kbd "k")
+              #'tmux-peek-session-list-kill)
+  (define-key tmux-peek-session-list-mode-map (kbd "q") #'quit-window))
+
+(tmux-peek-session-list--setup-keymap)
 
 (define-derived-mode tmux-peek-session-list-mode tabulated-list-mode
   "tmux-peek-sessions"
