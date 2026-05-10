@@ -14,7 +14,7 @@ With leaf and straight.el:
 
 #+begin_src elisp
 (leaf tmux-peek
-  :straight (:type git :host github :repo "phasetr/tmux-peek")
+  :straight (tmux-peek :type git :host github :repo "phasetr/tmux-peek")
   :require t)
 #+end_src
 

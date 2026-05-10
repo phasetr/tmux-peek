@@ -16,7 +16,7 @@ repository:
 
 #+begin_src elisp
 (leaf tmux-peek
-  :straight (:type git :local-repo "/path/to/tmux-peek")
+  :straight (tmux-peek :type git :local-repo "/path/to/tmux-peek")
   :require t)
 #+end_src
 
