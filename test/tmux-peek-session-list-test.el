@@ -32,7 +32,17 @@
         (should (equal tabulated-list-entries
                        '(("main" ["main" "$0" "2" "no" "1715240000"]))))
         (should (string-match-p "d/k delete session" (buffer-string)))
-        (should (string-match-p "RET/v/t view tail" (buffer-string)))))))
+        (should (string-match-p "RET/v/t view tail" (buffer-string)))
+        (should (equal (tabulated-list-get-id) "main"))))))
+
+(ert-deftest tmux-peek-session-list-keymap-binds-actions ()
+  (with-temp-buffer
+    (tmux-peek-session-list-mode)
+    (should (eq (key-binding (kbd "RET")) #'tmux-peek-session-list-view))
+    (should (eq (key-binding (kbd "v")) #'tmux-peek-session-list-view))
+    (should (eq (key-binding (kbd "t")) #'tmux-peek-session-list-view))
+    (should (eq (key-binding (kbd "d")) #'tmux-peek-session-list-kill))
+    (should (eq (key-binding (kbd "g")) #'tmux-peek-session-list-refresh))))
 
 (ert-deftest tmux-peek-session-list-view-captures-first-pane ()
   (with-temp-buffer
