@@ -38,7 +38,7 @@
 
 (defvar-local tmux-peek-session-list--opts nil)
 (defvar-local tmux-peek-session-list--last-result nil)
-(defvar-local tmux-peek-session-list--view-session nil)
+(defvar-local tmux-peek-session-list--state nil)
 
 (defconst tmux-peek-session-list--help-text
   "Keys: RET/v/t view tail | d/k delete session | g/r refresh | q quit\n\n")
@@ -105,21 +105,84 @@
   (or (tabulated-list-get-id)
       (user-error "No tmux session on this line")))
 
+(defun tmux-peek-session-list--set-list-state ()
+  "Mark the current buffer as showing the session list."
+  (setq tmux-peek-session-list--state '(:view list :session nil)))
+
+(defun tmux-peek-session-list--set-tail-state (session)
+  "Mark the current buffer as showing tail content for SESSION."
+  (setq tmux-peek-session-list--state
+        (list :view 'tail :session session)))
+
+(defun tmux-peek-session-list--tail-session ()
+  "Return the session shown by the current tail view, or nil."
+  (when (eq (plist-get tmux-peek-session-list--state :view) 'tail)
+    (plist-get tmux-peek-session-list--state :session)))
+
+(defun tmux-peek-session-list--with-live-buffer (buffer function)
+  "Call FUNCTION in BUFFER when BUFFER is still live."
+  (when (buffer-live-p buffer)
+    (with-current-buffer buffer
+      (funcall function))))
+
+(defun tmux-peek-session-list--goto-body ()
+  "Move point to the first content line after the in-buffer help."
+  (goto-char (point-min))
+  (forward-line 2))
+
+(defun tmux-peek-session-list--insert-help (text)
+  "Insert in-buffer help TEXT at the beginning of the buffer."
+  (goto-char (point-min))
+  (insert text))
+
+(defun tmux-peek-session-list--list-entries (result)
+  "Return tabulated list entries for list-sessions RESULT."
+  (when (plist-get result :ok)
+    (mapcar #'tmux-peek-session-list--entry
+            (plist-get result :value))))
+
+(defun tmux-peek-session-list--insert-tail (session result)
+  "Insert captured SESSION content from RESULT."
+  (insert tmux-peek-session-list--tail-help-text)
+  (insert (format "tmux session: %s\n" session))
+  (insert (format "tail lines: %s\n\n" tmux-peek-session-list-tail-lines))
+  (if (plist-get result :ok)
+      (insert (or (plist-get result :value) ""))
+    (insert (format "tmux-peek capture failed: %S\n"
+                    (plist-get result :error)))))
+
+(defun tmux-peek-session-list--handle-panes (session opts buffer result)
+  "Handle list-panes RESULT for SESSION using OPTS and BUFFER."
+  (if (plist-get result :ok)
+      (if-let* ((pane (car (plist-get result :value)))
+                (pane-id (plist-get pane :pane-id)))
+          (tmux-peek-session-list--capture-pane session pane-id opts buffer)
+        (message "tmux-peek found no pane in session: %s" session))
+    (message "tmux-peek list panes failed: %S"
+             (plist-get result :error))))
+
+(defun tmux-peek-session-list--handle-kill (session result)
+  "Handle kill-session RESULT for SESSION."
+  (setq tmux-peek-session-list--last-result result)
+  (if (plist-get result :ok)
+      (progn
+        (tmux-peek-session-list--set-list-state)
+        (message "Killed tmux session: %s" session)
+        (tmux-peek-session-list-refresh))
+    (message "tmux-peek kill session failed: %S"
+             (plist-get result :error))))
+
 (defun tmux-peek-session-list--apply-result (result)
   "Render list-sessions RESULT in the current buffer."
-  (setq tmux-peek-session-list--view-session nil)
+  (tmux-peek-session-list--set-list-state)
   (setq tmux-peek-session-list--last-result result)
   (tabulated-list-init-header)
-  (setq tabulated-list-entries
-        (when (plist-get result :ok)
-          (mapcar #'tmux-peek-session-list--entry
-                  (plist-get result :value))))
+  (setq tabulated-list-entries (tmux-peek-session-list--list-entries result))
   (tabulated-list-print t)
   (let ((inhibit-read-only t))
-    (goto-char (point-min))
-    (insert tmux-peek-session-list--help-text))
-  (goto-char (point-min))
-  (forward-line 2)
+    (tmux-peek-session-list--insert-help
+     tmux-peek-session-list--help-text))
+  (tmux-peek-session-list--goto-body)
   (unless (plist-get result :ok)
     (message "tmux-peek list sessions failed: %S"
              (plist-get result :error))))
@@ -127,27 +190,21 @@
 (defun tmux-peek-session-list--render-content (session result)
   "Render captured SESSION content from RESULT in the current buffer."
   (let ((inhibit-read-only t))
-    (setq tmux-peek-session-list--view-session session)
+    (tmux-peek-session-list--set-tail-state session)
     (setq tabulated-list-entries nil)
     (setq header-line-format nil)
     (erase-buffer)
-    (insert tmux-peek-session-list--tail-help-text)
-    (insert (format "tmux session: %s\n" session))
-    (insert (format "tail lines: %s\n\n" tmux-peek-session-list-tail-lines))
-    (if (plist-get result :ok)
-        (insert (or (plist-get result :value) ""))
-      (insert (format "tmux-peek capture failed: %S\n"
-                      (plist-get result :error)))))
-  (goto-char (point-min))
-  (forward-line 2))
+    (tmux-peek-session-list--insert-tail session result))
+  (tmux-peek-session-list--goto-body))
 
 (defun tmux-peek-session-list--capture-pane (session pane-id opts buffer)
   "Capture PANE-ID for SESSION with OPTS and render it in BUFFER."
   (tmux-peek-capture-pane-async
    (lambda (result)
-     (when (buffer-live-p buffer)
-       (with-current-buffer buffer
-         (tmux-peek-session-list--render-content session result))))
+     (tmux-peek-session-list--with-live-buffer
+      buffer
+      (lambda ()
+        (tmux-peek-session-list--render-content session result))))
    (append opts
            (list :target pane-id
                  :tail-lines tmux-peek-session-list-tail-lines))))
@@ -157,49 +214,45 @@
 When SESSION is nil, use the session at point."
   (interactive)
   (let ((session (or session
-                     tmux-peek-session-list--view-session
+                     (tmux-peek-session-list--tail-session)
                      (tmux-peek-session-list--session-at-point)))
         (opts tmux-peek-session-list--opts)
         (buffer (current-buffer)))
     (tmux-peek-list-panes-async
      (lambda (result)
-       (when (buffer-live-p buffer)
-         (with-current-buffer buffer
-           (if (plist-get result :ok)
-               (if-let* ((pane (car (plist-get result :value)))
-                         (pane-id (plist-get pane :pane-id)))
-                   (tmux-peek-session-list--capture-pane
-                    session pane-id opts buffer)
-                 (message "tmux-peek found no pane in session: %s" session))
-             (message "tmux-peek list panes failed: %S"
-                      (plist-get result :error))))))
+       (tmux-peek-session-list--with-live-buffer
+        buffer
+        (lambda ()
+          (tmux-peek-session-list--handle-panes
+           session opts buffer result))))
      (append opts (list :target session)))))
 
 (defun tmux-peek-session-list-refresh ()
   "Refresh the tmux session list."
   (interactive)
-  (if tmux-peek-session-list--view-session
-      (tmux-peek-session-list-view tmux-peek-session-list--view-session)
+  (if-let* ((session (tmux-peek-session-list--tail-session)))
+      (tmux-peek-session-list-view session)
     (let ((buffer (current-buffer))
           (opts tmux-peek-session-list--opts))
       (tmux-peek-list-sessions-async
        (lambda (result)
-         (when (buffer-live-p buffer)
-           (with-current-buffer buffer
-             (tmux-peek-session-list--apply-result result))))
+         (tmux-peek-session-list--with-live-buffer
+          buffer
+          (lambda ()
+            (tmux-peek-session-list--apply-result result))))
        opts))))
 
 (defun tmux-peek-session-list-back ()
   "Return from a session tail view to the session list."
   (interactive)
-  (setq tmux-peek-session-list--view-session nil)
+  (tmux-peek-session-list--set-list-state)
   (tmux-peek-session-list-refresh))
 
 (defun tmux-peek-session-list-kill (&optional session)
   "Kill SESSION, or the tmux session at point when SESSION is nil."
   (interactive)
   (let ((session (or session
-                     tmux-peek-session-list--view-session
+                     (tmux-peek-session-list--tail-session)
                      (tmux-peek-session-list--session-at-point)))
         (buffer (current-buffer))
         (opts tmux-peek-session-list--opts))
@@ -207,16 +260,10 @@ When SESSION is nil, use the session at point."
       (tmux-peek-kill-session-async
        session
        (lambda (result)
-         (when (buffer-live-p buffer)
-           (with-current-buffer buffer
-             (setq tmux-peek-session-list--last-result result)
-             (if (plist-get result :ok)
-                 (progn
-                   (setq tmux-peek-session-list--view-session nil)
-                   (message "Killed tmux session: %s" session)
-                   (tmux-peek-session-list-refresh))
-               (message "tmux-peek kill session failed: %S"
-                        (plist-get result :error))))))
+         (tmux-peek-session-list--with-live-buffer
+          buffer
+          (lambda ()
+            (tmux-peek-session-list--handle-kill session result))))
        opts))))
 
 ;;;###autoload

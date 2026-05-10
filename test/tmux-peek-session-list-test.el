@@ -94,7 +94,7 @@
       (tmux-peek-session-list-mode)
       (tmux-peek-session-list--render-content
        "main" '(:ok t :value "line1\nline2\n"))
-      (should (equal tmux-peek-session-list--view-session "main"))
+      (should (equal (tmux-peek-session-list--tail-session) "main"))
       (should (null header-line-format))
       (should (string-match-p "b back to sessions" (buffer-string)))
       (should (string-match-p "tmux session: main" (buffer-string)))
@@ -104,8 +104,8 @@
   (with-temp-buffer
     (tmux-peek-session-list-mode)
     (let ((tmux-peek-session-list--opts '(:socket-name "peek"))
-          (tmux-peek-session-list--view-session "main")
           pane-call)
+      (tmux-peek-session-list--set-tail-state "main")
       (cl-letf (((symbol-function 'tmux-peek-list-panes-async)
                  (lambda (_callback opts)
                    (setq pane-call opts)
@@ -116,8 +116,8 @@
 (ert-deftest tmux-peek-session-list-view-reuses-tail-session ()
   (with-temp-buffer
     (tmux-peek-session-list-mode)
-    (let ((tmux-peek-session-list--view-session "main")
-          pane-call)
+    (let (pane-call)
+      (tmux-peek-session-list--set-tail-state "main")
       (cl-letf (((symbol-function 'tmux-peek-list-panes-async)
                  (lambda (_callback opts)
                    (setq pane-call opts)
@@ -128,14 +128,14 @@
 (ert-deftest tmux-peek-session-list-back-refreshes-session-list ()
   (with-temp-buffer
     (tmux-peek-session-list-mode)
-    (let ((tmux-peek-session-list--view-session "main")
-          called)
+    (let (called)
+      (tmux-peek-session-list--set-tail-state "main")
       (cl-letf (((symbol-function 'tmux-peek-list-sessions-async)
                  (lambda (_callback _opts)
                    (setq called t)
                    :handle)))
         (should (eq (tmux-peek-session-list-back) :handle))
-        (should (null tmux-peek-session-list--view-session))
+        (should (null (tmux-peek-session-list--tail-session)))
         (should called)))))
 
 (ert-deftest tmux-peek-session-list-kill-kills-session-and-refreshes ()
