@@ -145,14 +145,16 @@ Opens an Emacs buffer listing tmux sessions.  The buffer supports:
 
 | Key | Action |
 |---|---|
-| =RET=, =v=, =t= | view one-shot tail-like content for the session |
-| =g=, =r= | refresh session list |
+| =RET=, =v=, =t= | view one-shot tail-like content in the same buffer |
+| =b= | return from tail view to the session list |
+| =g=, =r= | refresh session list or current tail view |
 | =d=, =k= | confirm, then kill the session at point |
 | =q= | quit the session list buffer |
 
 This is the primary interactive command for listing sessions and deleting
 unneeded sessions.  The view command lists panes in the selected session and
-captures the first pane with =:tail-lines=.
+captures the first pane with =:tail-lines=, replacing the session list content
+inside the same buffer.
 
 *** =tmux-peek-kill-session-async=
 
