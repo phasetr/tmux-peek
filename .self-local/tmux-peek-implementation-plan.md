@@ -13,7 +13,7 @@
 
 ## 0.1 現状
 
-- 土台, 非同期 executor, コマンド構築, parser, public async API, session 削除, 統合確認, README 整理は実装済み
+- 土台, 非同期 executor, コマンド構築, parser, public async API, session 削除, session 一覧 UI, 統合確認, README 整理は実装済み
 - `make check` は byte-compile, checkdoc, ERT を実行する
 - `make test-integration` は専用 tmux socket で実 tmux 3.6a 相当の挙動を確認する
 - 同期補助版は現段階では作らない
@@ -143,6 +143,7 @@
 - `tmux-peek-show-buffer-async`
 - `tmux-peek-show-options-async`
 - `tmux-peek-show-environment-async`
+- `tmux-peek-session-list`
 
 現段階では作らない:
 

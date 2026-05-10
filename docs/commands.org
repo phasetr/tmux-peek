@@ -135,6 +135,23 @@ missing-target cases.
 
 ** Cleanup
 
+*** =tmux-peek-session-list=
+
+#+begin_src elisp
+(tmux-peek-session-list &optional opts)
+#+end_src
+
+Opens an Emacs buffer listing tmux sessions.  The buffer supports:
+
+| Key | Action |
+|---|---|
+| =g=, =r= | refresh session list |
+| =d=, =k= | kill the session at point |
+| =q= | quit the session list buffer |
+
+This is the primary interactive command for listing sessions and deleting
+unneeded sessions.
+
 *** =tmux-peek-kill-session-async=
 
 #+begin_src elisp

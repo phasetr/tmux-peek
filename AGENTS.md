@@ -17,6 +17,9 @@ Codex must read this file before making implementation decisions.
 - It is related to, but independent from, enkan-repl: <https://github.com/phasetr/enkan-repl>.
 - enkan-repl already handles start/send/attach/mirror operational flows. Do not reimplement those here.
 - tmux-peek should prioritize state inspection, one-shot pane capture, and explicit session cleanup.
+- The primary interactive cleanup command is `tmux-peek-session-list`, which
+  lists tmux sessions in an Emacs buffer and lets the user refresh, kill the
+  selected session, or quit.
 
 ## Hard Scope Rules
 

@@ -51,6 +51,15 @@ streaming.
 tmux-peek cleanup is session-level because enkan-repl creates and removes tmux
 targets at session level.
 
+For interactive cleanup, use:
+
+#+begin_src elisp
+(tmux-peek-session-list)
+#+end_src
+
+In the session list buffer, use =g= or =r= to refresh, =d= or =k= to kill the
+session at point, and =q= to quit.
+
 #+begin_src elisp
 (tmux-peek-target-exists-p-async
  "enkan-session"

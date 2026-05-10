@@ -33,6 +33,7 @@ When module dependencies changed, reload the files in dependency order:
 (load "/path/to/tmux-peek/tmux-peek-command.el" nil 'nomessage)
 (load "/path/to/tmux-peek/tmux-peek-parse.el" nil 'nomessage)
 (load "/path/to/tmux-peek/tmux-peek-api.el" nil 'nomessage)
+(load "/path/to/tmux-peek/tmux-peek-session-list.el" nil 'nomessage)
 (load "/path/to/tmux-peek/tmux-peek.el" nil 'nomessage)
 #+end_src
 

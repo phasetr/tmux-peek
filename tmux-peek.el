@@ -36,6 +36,7 @@
 (require 'tmux-peek-command)
 (require 'tmux-peek-parse)
 (require 'tmux-peek-api)
+(require 'tmux-peek-session-list)
 
 (provide 'tmux-peek)
 ;;; tmux-peek.el ends here
