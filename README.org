@@ -35,8 +35,8 @@ With leaf and straight.el:
 - Check whether a tmux server is running.
 - Check whether a target exists.
 - Return the tmux version string.
-- Open an Emacs session list buffer with refresh, quit, and explicit
-  session deletion.
+- Open an Emacs session list buffer with tail-like content view, refresh,
+  quit, and explicit session deletion.
 - Kill only an explicitly selected session through =kill-session=.
 
 All public command wrappers are asynchronous and call a callback with a

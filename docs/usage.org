@@ -58,7 +58,9 @@ For interactive cleanup, use:
 #+end_src
 
 In the session list buffer, use =g= or =r= to refresh, =d= or =k= to kill the
-session at point, and =q= to quit.
+session at point, and =q= to quit.  Use =RET=, =v=, or =t= to show a one-shot
+tail-like capture of the selected session.  The current implementation lists
+panes in the session and captures the first pane.
 
 #+begin_src elisp
 (tmux-peek-target-exists-p-async

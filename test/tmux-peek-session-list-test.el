@@ -15,6 +15,8 @@
 (ert-deftest tmux-peek-session-list-refresh-renders-sessions ()
   (with-temp-buffer
     (tmux-peek-session-list-mode)
+    (should (string-match-p "delete session" mode-line-process))
+    (should (string-match-p "view tail" mode-line-process))
     (let ((tmux-peek-session-list--opts '(:socket-name "peek")))
       (cl-letf (((symbol-function 'tmux-peek-list-sessions-async)
                  (lambda (callback opts)
@@ -31,6 +33,47 @@
         (should (eq (tmux-peek-session-list-refresh) :handle))
         (should (equal tabulated-list-entries
                        '(("main" ["main" "$0" "2" "no" "1715240000"]))))))))
+
+(ert-deftest tmux-peek-session-list-view-captures-first-pane ()
+  (with-temp-buffer
+    (tmux-peek-session-list-mode)
+    (let ((tmux-peek-session-list--opts '(:socket-name "peek"))
+          (tmux-peek-session-list-tail-lines 20)
+          pane-call
+          capture-call)
+      (cl-letf (((symbol-function 'tmux-peek-list-panes-async)
+                 (lambda (callback opts)
+                   (setq pane-call opts)
+                   (funcall callback
+                            (list :ok t
+                                  :value '((:pane-id "%1")
+                                           (:pane-id "%2"))))
+                   :pane-handle))
+                ((symbol-function 'tmux-peek-capture-pane-async)
+                 (lambda (_callback opts)
+                   (setq capture-call opts)
+                   :capture-handle)))
+        (should (eq (tmux-peek-session-list-view "main") :pane-handle))
+        (should (equal pane-call '(:socket-name "peek" :target "main")))
+        (should (equal capture-call
+                       '(:socket-name "peek" :target "%1" :tail-lines 20)))))))
+
+(ert-deftest tmux-peek-session-list-render-content-opens-view-buffer ()
+  (let ((tmux-peek-session-list-tail-lines 10))
+    (unwind-protect
+        (cl-letf (((symbol-function 'pop-to-buffer)
+                   (lambda (buffer &rest _args)
+                     buffer)))
+          (let ((buffer
+                 (tmux-peek-session-list--render-content
+                  "main" '(:ok t :value "line1\nline2\n"))))
+            (should (equal (buffer-name buffer) "*tmux-peek main tail*"))
+            (with-current-buffer buffer
+              (should (string-match-p "tmux session: main"
+                                      (buffer-string)))
+              (should (string-match-p "line2" (buffer-string))))))
+      (when-let* ((buffer (get-buffer "*tmux-peek main tail*")))
+        (kill-buffer buffer)))))
 
 (ert-deftest tmux-peek-session-list-kill-kills-session-and-refreshes ()
   (with-temp-buffer

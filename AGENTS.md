@@ -19,7 +19,8 @@ Codex must read this file before making implementation decisions.
 - tmux-peek should prioritize state inspection, one-shot pane capture, and explicit session cleanup.
 - The primary interactive cleanup command is `tmux-peek-session-list`, which
   lists tmux sessions in an Emacs buffer and lets the user refresh, kill the
-  selected session, or quit.
+  selected session, view one-shot tail-like content for the selected session,
+  or quit.
 
 ## Hard Scope Rules
 
