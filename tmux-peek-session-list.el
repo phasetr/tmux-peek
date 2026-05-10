@@ -39,6 +39,9 @@
 (defvar-local tmux-peek-session-list--opts nil)
 (defvar-local tmux-peek-session-list--last-result nil)
 
+(defconst tmux-peek-session-list--help-text
+  "Keys: RET/v/t view tail | d/k delete session | g/r refresh | q quit\n\n")
+
 (defvar-keymap tmux-peek-session-list-mode-map
   :doc "Keymap for `tmux-peek-session-list-mode'."
   :parent tabulated-list-mode-map
@@ -62,8 +65,6 @@
          ("Created" 12 t)])
   (setq tabulated-list-padding 2)
   (setq tabulated-list-sort-key (cons "Name" nil))
-  (setq-local mode-line-process
-              " RET/v/t view tail | d/k delete session | g/r refresh | q quit")
   (tabulated-list-init-header))
 
 (defun tmux-peek-session-list--string (value)
@@ -94,6 +95,9 @@
           (mapcar #'tmux-peek-session-list--entry
                   (plist-get result :value))))
   (tabulated-list-print t)
+  (let ((inhibit-read-only t))
+    (goto-char (point-min))
+    (insert tmux-peek-session-list--help-text))
   (unless (plist-get result :ok)
     (message "tmux-peek list sessions failed: %S"
              (plist-get result :error))))

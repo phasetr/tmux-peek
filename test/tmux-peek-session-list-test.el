@@ -15,8 +15,6 @@
 (ert-deftest tmux-peek-session-list-refresh-renders-sessions ()
   (with-temp-buffer
     (tmux-peek-session-list-mode)
-    (should (string-match-p "delete session" mode-line-process))
-    (should (string-match-p "view tail" mode-line-process))
     (let ((tmux-peek-session-list--opts '(:socket-name "peek")))
       (cl-letf (((symbol-function 'tmux-peek-list-sessions-async)
                  (lambda (callback opts)
@@ -32,7 +30,9 @@
                    :handle)))
         (should (eq (tmux-peek-session-list-refresh) :handle))
         (should (equal tabulated-list-entries
-                       '(("main" ["main" "$0" "2" "no" "1715240000"]))))))))
+                       '(("main" ["main" "$0" "2" "no" "1715240000"]))))
+        (should (string-match-p "d/k delete session" (buffer-string)))
+        (should (string-match-p "RET/v/t view tail" (buffer-string)))))))
 
 (ert-deftest tmux-peek-session-list-view-captures-first-pane ()
   (with-temp-buffer
