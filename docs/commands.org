@@ -1,0 +1,168 @@
+* tmux-peek Command Reference
+
+All public tmux command wrappers are asynchronous.  Each function returns a
+tmux-peek handle and calls its callback with a result plist.
+
+Successful results use =:ok t=.  Most successful command wrappers also set
+=:value=.  Failed results use =:ok nil= and =:error=.
+
+Common options are passed as a plist:
+
+| Option | Meaning |
+|---|---|
+| =:tmux-executable= | tmux executable path |
+| =:socket-name= | tmux =-L= socket name |
+| =:socket-path= | tmux =-S= socket path |
+| =:target= | tmux target passed with =-t= |
+| =:timeout= | async timeout in seconds |
+
+** Listing
+
+*** =tmux-peek-list-sessions-async=
+
+#+begin_src elisp
+(tmux-peek-list-sessions-async callback &optional opts)
+#+end_src
+
+Runs =list-sessions= and returns a list of session plists.
+
+*** =tmux-peek-list-windows-async=
+
+#+begin_src elisp
+(tmux-peek-list-windows-async callback &optional opts)
+#+end_src
+
+Runs =list-windows= and returns a list of window plists.
+
+*** =tmux-peek-list-panes-async=
+
+#+begin_src elisp
+(tmux-peek-list-panes-async callback &optional opts)
+#+end_src
+
+Runs =list-panes= and returns a list of pane plists.
+
+*** =tmux-peek-list-clients-async=
+
+#+begin_src elisp
+(tmux-peek-list-clients-async callback &optional opts)
+#+end_src
+
+Runs =list-clients= and returns a list of client plists.
+
+*** =tmux-peek-list-buffers-async=
+
+#+begin_src elisp
+(tmux-peek-list-buffers-async callback &optional opts)
+#+end_src
+
+Runs =list-buffers= and returns a list of paste-buffer plists.
+
+** Content
+
+*** =tmux-peek-capture-pane-async=
+
+#+begin_src elisp
+(tmux-peek-capture-pane-async callback &optional opts)
+#+end_src
+
+Runs =capture-pane -p -J=.  Use =:target= to select the pane.  Use
+=:tail-lines= for one-shot tail-like capture.
+
+*** =tmux-peek-show-buffer-async=
+
+#+begin_src elisp
+(tmux-peek-show-buffer-async callback &optional opts)
+#+end_src
+
+Runs =show-buffer=.  Use =:buffer-name= to pass =-b=.
+
+** Metadata
+
+*** =tmux-peek-display-message-async=
+
+#+begin_src elisp
+(tmux-peek-display-message-async format callback &optional opts)
+#+end_src
+
+Runs =display-message -p FORMAT= and returns the expanded string.
+
+*** =tmux-peek-show-options-async=
+
+#+begin_src elisp
+(tmux-peek-show-options-async callback &optional opts)
+#+end_src
+
+Runs =show-options=.  Supported options include =:global=, =:window=,
+=:target=, and =:option=.
+
+*** =tmux-peek-show-environment-async=
+
+#+begin_src elisp
+(tmux-peek-show-environment-async callback &optional opts)
+#+end_src
+
+Runs =show-environment=.  Supported options include =:global=, =:target=, and
+=:variable=.
+
+*** =tmux-peek-version-async=
+
+#+begin_src elisp
+(tmux-peek-version-async callback &optional opts)
+#+end_src
+
+Runs =tmux -V= and returns the version string.
+
+** Checks
+
+*** =tmux-peek-server-running-p-async=
+
+#+begin_src elisp
+(tmux-peek-server-running-p-async callback &optional opts)
+#+end_src
+
+Returns =t= when a tmux server is running for the selected socket, otherwise
+=nil= for the known no-server case.
+
+*** =tmux-peek-target-exists-p-async=
+
+#+begin_src elisp
+(tmux-peek-target-exists-p-async target callback &optional opts)
+#+end_src
+
+Returns =t= when TARGET resolves to a tmux target, otherwise =nil= for known
+missing-target cases.
+
+** Cleanup
+
+*** =tmux-peek-session-list=
+
+#+begin_src elisp
+(tmux-peek-session-list &optional opts)
+#+end_src
+
+Opens an Emacs buffer listing tmux sessions.  The buffer supports:
+
+| Key | Action |
+|---|---|
+| =RET=, =v=, =t= | view one-shot tail-like content in the same buffer |
+| =b= | return from tail view to the session list |
+| =g=, =r= | refresh session list or current tail view |
+| =d=, =k= | confirm, then kill the session at point |
+| =q= | quit the session list buffer |
+
+This is the primary interactive command for listing sessions and deleting
+unneeded sessions.  The view command lists panes in the selected session and
+captures the first pane with =:tail-lines=, replacing the session list content
+inside the same buffer.
+
+*** =tmux-peek-kill-session-async=
+
+#+begin_src elisp
+(tmux-peek-kill-session-async target callback &optional opts)
+#+end_src
+
+Runs =kill-session -t TARGET=.  This is the only cleanup wrapper exposed by
+tmux-peek.
+
+tmux-peek does not expose =kill-pane=, =kill-window=, or =kill-server=.
