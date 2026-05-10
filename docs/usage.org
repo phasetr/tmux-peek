@@ -1,0 +1,113 @@
+* tmux-peek Usage
+
+tmux-peek is async-first.  Pass a callback and inspect the result plist inside
+that callback.
+
+** Basic Callback Pattern
+
+#+begin_src elisp
+(tmux-peek-list-sessions-async
+ (lambda (result)
+   (if (plist-get result :ok)
+       (message "sessions: %S" (plist-get result :value))
+     (message "tmux-peek failed: %S" (plist-get result :error)))))
+#+end_src
+
+** Selecting a tmux Socket
+
+Use =:socket-name= for tmux =-L=:
+
+#+begin_src elisp
+(tmux-peek-list-panes-async
+ (lambda (result)
+   (when (plist-get result :ok)
+     (message "%S" (plist-get result :value))))
+ '(:socket-name "main"))
+#+end_src
+
+Use =:socket-path= for tmux =-S=:
+
+#+begin_src elisp
+(tmux-peek-list-sessions-async
+ callback
+ '(:socket-path "/tmp/tmux-peek.sock"))
+#+end_src
+
+** One-shot Tail-like Capture
+
+=:tail-lines= is a single =capture-pane= call.  It is not watch, polling, or
+streaming.
+
+#+begin_src elisp
+(tmux-peek-capture-pane-async
+ (lambda (result)
+   (when (plist-get result :ok)
+     (message "%s" (plist-get result :value))))
+ '(:target "%1" :tail-lines 40))
+#+end_src
+
+** Checking and Cleaning a Session
+
+tmux-peek cleanup is session-level because enkan-repl creates and removes tmux
+targets at session level.
+
+For interactive cleanup, use:
+
+#+begin_src elisp
+(tmux-peek-session-list)
+#+end_src
+
+In the session list buffer, use =g= or =r= to refresh, =d= or =k= to confirm
+and kill the session at point, and =q= to quit.  Use =RET=, =v=, or =t= to show
+a one-shot tail-like capture of the selected session in the same buffer.  Use
+=b= to return from the tail view to the session list.  The current
+implementation lists panes in the session and captures the first pane.
+
+#+begin_src elisp
+(tmux-peek-target-exists-p-async
+ "enkan-session"
+ (lambda (exists-result)
+   (when (and (plist-get exists-result :ok)
+              (plist-get exists-result :value))
+     (tmux-peek-kill-session-async
+      "enkan-session"
+      (lambda (kill-result)
+        (message "killed: %S" (plist-get kill-result :ok)))))))
+#+end_src
+
+Only call =tmux-peek-kill-session-async= with an explicit session target.
+tmux-peek does not provide automatic cleanup selection.
+
+** Parallel Queries
+
+=tmux-peek-parallel-async= runs async thunks and returns results in the same
+order.
+
+#+begin_src elisp
+(tmux-peek-parallel-async
+ (list
+  (lambda (callback)
+    (tmux-peek-list-sessions-async callback))
+  (lambda (callback)
+    (tmux-peek-list-panes-async callback)))
+ (lambda (results)
+   (message "%S" results)))
+#+end_src
+
+** Error Shape
+
+Known failures are returned in the callback instead of being signaled from the
+process callback.
+
+#+begin_src elisp
+(:ok nil :error tmux-peek-error-no-server :stderr "..." :exit-code 1)
+#+end_src
+
+Common error symbols:
+
+- =tmux-peek-error-not-found=
+- =tmux-peek-error-no-server=
+- =tmux-peek-error-no-target=
+- =tmux-peek-error-timeout=
+- =tmux-peek-error-parse=
+- =tmux-peek-error-exec=
