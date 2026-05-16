@@ -62,6 +62,8 @@ and kill the session at point, and =q= to quit.  Use =RET=, =v=, or =t= to show
 a one-shot tail-like capture of the selected session in the same buffer.  Use
 =b= to return from the tail view to the session list.  The current
 implementation lists panes in the session and captures the first pane.
+=tmux-peek-session-list-tail-lines= controls that capture size and defaults to
+10000 lines.
 
 #+begin_src elisp
 (tmux-peek-target-exists-p-async

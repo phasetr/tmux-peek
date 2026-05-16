@@ -31,10 +31,29 @@
   :type 'string
   :group 'tmux-peek)
 
-(defcustom tmux-peek-session-list-tail-lines 80
+(defconst tmux-peek-session-list--default-tail-lines 10000
+  "Default number of tail lines for session content views.")
+
+(defconst tmux-peek-session-list--legacy-default-tail-lines 80
+  "Old default number of tail lines used before long captures.")
+
+(defcustom tmux-peek-session-list-tail-lines
+  tmux-peek-session-list--default-tail-lines
   "Number of tail lines to capture when viewing a session."
   :type 'integer
   :group 'tmux-peek)
+
+(defun tmux-peek-session-list--migrate-tail-lines-default ()
+  "Update an uncustomized legacy tail line default in a live Emacs session."
+  (when (and (= tmux-peek-session-list-tail-lines
+                tmux-peek-session-list--legacy-default-tail-lines)
+             (not (get 'tmux-peek-session-list-tail-lines 'saved-value))
+             (not (get 'tmux-peek-session-list-tail-lines 'customized-value))
+             (not (get 'tmux-peek-session-list-tail-lines 'theme-value)))
+    (setq tmux-peek-session-list-tail-lines
+          tmux-peek-session-list--default-tail-lines)))
+
+(tmux-peek-session-list--migrate-tail-lines-default)
 
 (defvar-local tmux-peek-session-list--opts nil)
 (defvar-local tmux-peek-session-list--last-result nil)

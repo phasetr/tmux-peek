@@ -37,6 +37,8 @@ With leaf and straight.el:
 - Return the tmux version string.
 - Open an Emacs session list buffer with tail-like content view, refresh,
   quit, and explicit session deletion.
+- The session list tail view captures 10000 lines by default through
+  =tmux-peek-session-list-tail-lines=.
 - Kill only an explicitly selected session through =kill-session=.
 
 All public command wrappers are asynchronous and call a callback with a

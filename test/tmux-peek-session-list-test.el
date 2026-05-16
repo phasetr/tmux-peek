@@ -45,6 +45,32 @@
     (should (eq (key-binding (kbd "g")) #'tmux-peek-session-list-refresh))
     (should (eq (key-binding (kbd "b")) #'tmux-peek-session-list-back))))
 
+(ert-deftest tmux-peek-session-list-tail-lines-defaults-to-long-capture ()
+  (should (= tmux-peek-session-list-tail-lines 10000)))
+
+(ert-deftest tmux-peek-session-list-migrates-uncustomized-legacy-tail-lines ()
+  (let ((tmux-peek-session-list-tail-lines 80))
+    (tmux-peek-session-list--migrate-tail-lines-default)
+    (should (= tmux-peek-session-list-tail-lines 10000))))
+
+(ert-deftest tmux-peek-session-list-keeps-customized-legacy-tail-lines ()
+  (let ((tmux-peek-session-list-tail-lines 80)
+        (old-saved (get 'tmux-peek-session-list-tail-lines 'saved-value))
+        (old-customized
+         (get 'tmux-peek-session-list-tail-lines 'customized-value))
+        (old-theme (get 'tmux-peek-session-list-tail-lines 'theme-value)))
+    (unwind-protect
+        (progn
+          (put 'tmux-peek-session-list-tail-lines 'saved-value '(80))
+          (put 'tmux-peek-session-list-tail-lines 'customized-value nil)
+          (put 'tmux-peek-session-list-tail-lines 'theme-value nil)
+          (tmux-peek-session-list--migrate-tail-lines-default)
+          (should (= tmux-peek-session-list-tail-lines 80)))
+      (put 'tmux-peek-session-list-tail-lines 'saved-value old-saved)
+      (put 'tmux-peek-session-list-tail-lines
+           'customized-value old-customized)
+      (put 'tmux-peek-session-list-tail-lines 'theme-value old-theme))))
+
 (ert-deftest tmux-peek-session-list-setup-keymap-updates-existing-map ()
   (let ((original-map tmux-peek-session-list-mode-map))
     (unwind-protect
@@ -99,6 +125,18 @@
       (should (string-match-p "b back to sessions" (buffer-string)))
       (should (string-match-p "tmux session: main" (buffer-string)))
       (should (string-match-p "line2" (buffer-string))))))
+
+(ert-deftest tmux-peek-session-list-render-content-handles-default-sized-tail ()
+  (let ((content (mapconcat
+                  (lambda (index) (format "line-%05d" index))
+                  (number-sequence 1 tmux-peek-session-list-tail-lines)
+                  "\n")))
+    (with-temp-buffer
+      (tmux-peek-session-list-mode)
+      (tmux-peek-session-list--render-content
+       "main" (list :ok t :value content))
+      (should (string-match-p "tail lines: 10000" (buffer-string)))
+      (should (string-match-p "line-10000" (buffer-string))))))
 
 (ert-deftest tmux-peek-session-list-refresh-recaptures-tail-view ()
   (with-temp-buffer

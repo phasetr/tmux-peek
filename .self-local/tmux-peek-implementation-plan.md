@@ -14,6 +14,7 @@
 ## 0.1 現状
 
 - 土台, 非同期 executor, コマンド構築, parser, public async API, session 削除, session 一覧 UI, 統合確認, README 整理は実装済み
+- session 一覧 UI の tail 的表示は enkan-repl 連携で長めの出力確認を優先し, 既定 10000 行に調整済み
 - `make check` は byte-compile, checkdoc, ERT を実行する
 - `make test-integration` は専用 tmux socket で実 tmux 3.6a 相当の挙動を確認する
 - 同期補助版は現段階では作らない
@@ -181,6 +182,7 @@
 - display message
 - capture pane
 - `:tail-lines`
+- session 一覧 UI の既定 10000 行 tail capture
 - show-buffer
 - show-options
 - show-environment
