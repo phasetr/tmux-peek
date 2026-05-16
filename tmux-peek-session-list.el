@@ -31,7 +31,7 @@
   :type 'string
   :group 'tmux-peek)
 
-(defcustom tmux-peek-session-list-tail-lines 80
+(defcustom tmux-peek-session-list-tail-lines 10000
   "Number of tail lines to capture when viewing a session."
   :type 'integer
   :group 'tmux-peek)

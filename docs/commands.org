@@ -154,7 +154,8 @@ Opens an Emacs buffer listing tmux sessions.  The buffer supports:
 This is the primary interactive command for listing sessions and deleting
 unneeded sessions.  The view command lists panes in the selected session and
 captures the first pane with =:tail-lines=, replacing the session list content
-inside the same buffer.
+inside the same buffer.  The default tail capture size is controlled by
+=tmux-peek-session-list-tail-lines= and is 10000 lines.
 
 *** =tmux-peek-kill-session-async=
 
