@@ -48,6 +48,29 @@
 (ert-deftest tmux-peek-session-list-tail-lines-defaults-to-long-capture ()
   (should (= tmux-peek-session-list-tail-lines 10000)))
 
+(ert-deftest tmux-peek-session-list-migrates-uncustomized-legacy-tail-lines ()
+  (let ((tmux-peek-session-list-tail-lines 80))
+    (tmux-peek-session-list--migrate-tail-lines-default)
+    (should (= tmux-peek-session-list-tail-lines 10000))))
+
+(ert-deftest tmux-peek-session-list-keeps-customized-legacy-tail-lines ()
+  (let ((tmux-peek-session-list-tail-lines 80)
+        (old-saved (get 'tmux-peek-session-list-tail-lines 'saved-value))
+        (old-customized
+         (get 'tmux-peek-session-list-tail-lines 'customized-value))
+        (old-theme (get 'tmux-peek-session-list-tail-lines 'theme-value)))
+    (unwind-protect
+        (progn
+          (put 'tmux-peek-session-list-tail-lines 'saved-value '(80))
+          (put 'tmux-peek-session-list-tail-lines 'customized-value nil)
+          (put 'tmux-peek-session-list-tail-lines 'theme-value nil)
+          (tmux-peek-session-list--migrate-tail-lines-default)
+          (should (= tmux-peek-session-list-tail-lines 80)))
+      (put 'tmux-peek-session-list-tail-lines 'saved-value old-saved)
+      (put 'tmux-peek-session-list-tail-lines
+           'customized-value old-customized)
+      (put 'tmux-peek-session-list-tail-lines 'theme-value old-theme))))
+
 (ert-deftest tmux-peek-session-list-setup-keymap-updates-existing-map ()
   (let ((original-map tmux-peek-session-list-mode-map))
     (unwind-protect

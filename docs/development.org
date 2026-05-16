@@ -52,6 +52,10 @@ They should all return =tmux-peek-session-list-view=.  If the buffer content
 itself is stale, run =M-x tmux-peek-session-list-refresh= or reopen
 =M-x tmux-peek-session-list=.
 
+Old live Emacs sessions that previously loaded the 80-line session tail
+default are migrated to the current 10000-line default on reload, unless the
+value was explicitly customized.
+
 If behavior still looks stale, start a fresh Emacs.  Async process sentinels
 and old callback closures can keep old definitions alive until their process
 finishes.
